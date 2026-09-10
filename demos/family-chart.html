@@ -55,7 +55,7 @@
   </nav>
 </header>
 <main>
-  <p class="demo-note">Family Chart with its genealogy layout, but the person node is the exact shared PersonCard component. The library's own card backgrounds, borders and shadows are explicitly neutralized so only the shared component remains visible. Transition time is zero.</p>
+  <p class="demo-note">Family Chart owns the genealogy layout only. Every node is the shared PersonCard. Sex is indicated by the avatar outline; deceased people use a desaturated avatar with a diagonal mourning ribbon. Transition time is zero.</p>
   <div class="canvas-shell"><div id="FamilyChart" class="f3"></div></div>
 </main>
 <script type="module">
@@ -85,6 +85,9 @@
       id: person.id,
       data: {
         gender: person.sex,
+        sex: person.sex,
+        deceased: Boolean(person.deceased),
+        photo: person.photo || '',
         'first name': firstName,
         'last name': rest.join(' '),
         years: person.years
@@ -105,7 +108,10 @@
       return `<div class="card-inner genealogy-card-host">${personCardElementHtml({
         id: d.data.id,
         name,
-        years: p.years || ''
+        years: p.years || '',
+        sex: p.sex || p.gender || '',
+        deceased: Boolean(p.deceased),
+        photo: p.photo || ''
       })}</div>`;
     });
 
