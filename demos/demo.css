@@ -52,43 +52,13 @@ main { padding: 18px; }
     #fbfaf7;
   box-shadow: 0 14px 40px rgba(59,51,42,.08);
 }
-.person-card {
+
+genealogy-person-card {
+  display: block;
   width: 184px;
-  min-height: 72px;
-  display: grid;
-  grid-template-columns: 44px 1fr;
-  gap: 11px;
-  align-items: center;
-  padding: 11px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(49,45,39,.13);
-  background: rgba(255,255,255,.97);
-  box-shadow: 0 4px 14px rgba(48,42,34,.09);
-  text-align: left;
+  height: 72px;
 }
-.person-card .avatar {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #eeebe4;
-  color: #59534a;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .02em;
-}
-.person-card .name {
-  font-size: 14px;
-  line-height: 1.25;
-  font-weight: 650;
-  color: #26231f;
-}
-.person-card .years {
-  margin-top: 4px;
-  font-size: 12px;
-  color: #827b71;
-}
+
 .union-dot {
   width: 14px;
   height: 14px;
