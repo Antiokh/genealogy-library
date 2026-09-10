@@ -33,9 +33,9 @@
   </nav>
 </header>
 <main>
-  <p class="demo-note">Vue Flow still owns interaction and ELK still owns coordinates, but the person node contains the exact same shared PersonCard Web Component as the genealogy-specific demos. Only the handles belong to Vue Flow.</p>
+  <p class="demo-note">Vue Flow owns interaction and ELK owns coordinates. By default this page renders the real MyHeritage snapshot centered on Anton; append <code>?sample=1</code> for the synthetic fixture. Person nodes use the same shared PersonCard; family/union nodes remain explicit.</p>
   <div class="canvas-shell"><div id="app">
-    <vue-flow :nodes="nodes" :edges="edges" :fit-view-on-init="true" :min-zoom="0.25" :max-zoom="2" :nodes-draggable="false">
+    <vue-flow :nodes="nodes" :edges="edges" :fit-view-on-init="true" :min-zoom="0.1" :max-zoom="2" :nodes-draggable="false">
       <template #node-person="{ data }">
         <div class="person-node-wrap">
           <handle type="target" :position="Position.Top"></handle>
@@ -56,7 +56,7 @@
 </main>
 
 <script type="module">
-  import { family } from './sample-data.js';
+  import { family } from './demo-data.js';
   import { toVueFlowElkData } from './renderer-adapters.js';
   import { personCardElementHtml } from './person-card.js';
 
