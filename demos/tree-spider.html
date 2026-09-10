@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>treeSpider demo</title>
+  <link rel="stylesheet" href="./demo.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/treespider@1.0.2/dist/css/treeSpider.css">
+  <style>
+    #TreeSpider { width: 100%; height: 100%; }
+    #TreeSpider svg { background: transparent !important; }
+  </style>
+</head>
+<body>
+<header>
+  <strong>Tree demo</strong>
+  <nav>
+    <a href="./index.html">Overview</a>
+    <a href="./family-chart.html">Family Chart</a>
+    <a href="./apextree.html">ApexTree</a>
+    <a class="active" href="./tree-spider.html">treeSpider</a>
+    <a href="./jscharting.html">JSCharting</a>
+    <a href="./dhtmlx.html">DHTMLX</a>
+    <a href="./vue-flow-elk.html">Vue Flow + ELK</a>
+    <a href="./custom-svg.html">Custom SVG</a>
+  </nav>
+</header>
+<main>
+  <p class="demo-note">treeSpider is small, MIT-licensed and visually cleaner than most org-chart libraries. But its data model is still exactly one <code>parentId</code> per node. As with ApexTree, the two partnership nodes below Daniel are a projection hack, not native marriage semantics.</p>
+  <div class="canvas-shell"><div id="TreeSpider"></div></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/treespider@1.0.2/dist/browser/treeSpider.bundle.min.js"></script>
+<script type="module">
+  import { byId } from './sample-data.js';
+
+  const person = (id, parentId) => ({
+    id,
+    parentId,
+    name: byId[id].name,
+    role: byId[id].years,
+    location: ''
+  });
+
+  const data = [
+    person('P3'),
+    { id: 'F4', parentId: 'P3', name: '1998–2010', role: 'partnership', location: '' },
+    person('P4', 'F4'),
+    person('P6', 'F4'),
+    person('P7', 'F4'),
+    { id: 'F5', parentId: 'P3', name: '2011–', role: 'partnership', location: '' },
+    person('P5', 'F5'),
+    person('P8', 'F5'),
+    { id: 'F6', parentId: 'P7', name: 'parenthood', role: 'single-parent union', location: '' },
+    person('P13', 'F6')
+  ];
+
+  new TreeSpider({
+    targetContainer: '#TreeSpider',
+    width: '100%',
+    height: '760px',
+    tree_data: data,
+    tree_type: 'default',
+    chart_head_type: 'landscape',
+    show_tools: false,
+    show_chart_head_border: false,
+    backgroundPattern: 'none',
+    chart_head_bg: '#ffffff',
+    auto_set_chart_head_bg: false,
+    verticalSpace: '110px',
+    tree_link_type: 'curveStep'
+  });
+</script>
+</body>
+</html>

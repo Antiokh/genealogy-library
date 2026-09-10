@@ -10,151 +10,192 @@ The visualization must understand genealogy as more than a generic hierarchy.
 
 A marriage/partnership must be representable as a real family/union context so that children belong to the correct couple. This matters for remarriages, multiple partners, half-siblings and other normal genealogy cases.
 
-At the same time, Genealogy Library is a browse-first product. Visual quality is therefore a primary requirement, not a cosmetic follow-up. A genealogy-aware renderer with an unacceptable fixed visual design is not a suitable production renderer.
+At the same time, Genealogy Library is a browse-first product. Visual quality and perceived lightness are primary requirements, not cosmetic follow-ups.
 
-## Current direction: own presentation layer over a generic graph renderer
+The renderer should ideally provide most of the boring interaction work — layout, zoom/pan, focus, expand/collapse — while still allowing the tree to look like Genealogy Library rather than an embedded enterprise diagram widget.
 
-After testing/reviewing Topola, it is no longer the preferred production renderer. Its genealogy model is useful, but its visual language is too dated and rigid for the intended family-encyclopedia experience.
+## Current status: evaluation reopened
 
-The preferred implementation direction is now:
+Topola has good genealogy semantics but an unacceptable visual language for the intended product.
 
-```text
-canonical Markdown
-        ↓
-stateless genealogy build
-        ↓
-people + family/union nodes
-        ↓
-family-tree layout adapter
-        ↓
-Vue Flow presentation
-```
+Vue Flow + ELK proved the opposite extreme: technically flexible and correct, but heavy for a site whose tree cards would still need to be designed and implemented manually. The stack is useful as a fallback, not an automatic first choice.
 
-### Vue Flow
-
-Repository: `bcakmakoglu/vue-flow`
-
-Use Vue Flow primarily for interaction and rendering:
-
-- arbitrary custom person cards;
-- arbitrary custom family/union nodes;
-- custom relationship edges;
-- zoom and pan;
-- selection/focus;
-- responsive interaction;
-- future lightweight edit actions around a person card.
-
-It is a generic graph UI, which is an advantage here: it does not impose a genealogy-specific visual design. Genealogy semantics stay in our generated graph and layout adapter.
-
-### Layout engine
-
-The initial layout experiment should use `elkjs` / Eclipse Layout Kernel.
-
-ELK computes graph positions but does not render the UI. This separation allows the layout algorithm to be replaced without rewriting cards or interactions.
-
-The family/union record should be projected as a small or invisible layout node:
+The current evaluation therefore compares three categories:
 
 ```text
-P001 ──┐
-       F001
-P002 ──┘
-        │
-   ┌────┴────┐
- P003       P004
+1. genealogy-aware renderer
+   understands multiple parents / unions directly
+
+2. lightweight hierarchy renderer
+   looks good and feels fast, but needs genealogy projection hacks
+
+3. custom presentation + layout engine
+   maximum control, maximum implementation ownership
 ```
 
-For another partnership:
+Disposable demos live under `demos/` on the visualization spike branch.
 
-```text
-P001 ── F001 ── P002
-          │
-       P003 P004
-
-P001 ── F002 ── P006
-          │
-          P005
-```
-
-This keeps the graph unambiguous: children connect to a specific family/union, not merely to a person who happens to have multiple spouses.
-
-ELK is not genealogy-aware, so the proof-of-concept must verify that its layered layout plus constraints/ports produces acceptable spouse alignment and child routing. If not, keep Vue Flow and replace only the layout algorithm.
-
-## Topola: domain/layout reference, not production UI
-
-Repository: `PeWu/topola`
-
-Topola remains useful because its internal JSON model treats a family as a first-class record:
-
-```ts
-interface JsonIndi {
-  id: string;
-  famc?: string;
-  fams?: string[];
-}
-
-interface JsonFam {
-  id: string;
-  children?: string[];
-  wife?: string;
-  husb?: string;
-  marriage?: JsonEvent;
-}
-```
-
-Useful parts to study:
-
-- family-aware hierarchy construction;
-- ancestor/descendant/relatives traversal;
-- handling one individual in multiple spouse families;
-- duplicate appearance of the same person in complex views;
-- GEDCOM-to-family graph behavior.
-
-Do not use Topola's current visual design as the primary site UI and do not let its `husb` / `wife` API shape the canonical gender-neutral model.
-
-## Family Chart: visual reference / possible prototype
+## Family Chart
 
 Repository: `donatso/family-chart`
 
-Family Chart remains the strongest off-the-shelf visual reference found so far. It is visually much closer to the intended product and easy to embed.
+Family Chart remains the strongest permissive off-the-shelf genealogy-specific visual reference found so far.
 
-However its public data model stores `parents`, `spouses` and `children` on people, and an open 2026 issue reports incorrect multi-spouse placement where children can visually descend from the wrong couple.
+Strengths:
 
-That is a core genealogy correctness issue for this project. Therefore:
+- genealogy-specific rather than generic org chart;
+- attractive enough to be usable after moderate card/CSS work;
+- zoom/pan and interactive focus already solved;
+- MIT licensed;
+- easy to embed.
 
-- use it as a design benchmark;
-- it can be used for a quick visual prototype;
-- do not make its relationship model canonical;
-- do not depend on it as the only production renderer until multi-spouse behavior is verified/fixed.
+Risks:
 
-If its layout code is substantially easier to adapt than building our own, an MIT-compatible fork or focused fix may be evaluated separately.
+- person-centric `parents/spouses/children` relationship model;
+- known multi-spouse layout problems can cause children to appear under the wrong couple;
+- initial rendering has felt slower than expected in testing.
 
-## Other useful references
+The demo now disables transition animation completely. This lets us distinguish animation latency from actual layout/render cost.
 
-### React Flow
+Family Chart is still a serious candidate if its multi-spouse behavior can be corrected without effectively rewriting the layout engine.
 
-Repository: `xyflow/xyflow`
+## ApexTree
 
-React Flow is the closest mature alternative to Vue Flow and has a very large ecosystem. The architecture described here works equally well with it. Vue Flow is currently preferred only at the presentation-framework level; the generated genealogy graph and layout adapter must not depend on Vue.
+Repository: `apexcharts/apextree`
 
-### entitree-flex
+ApexTree is visually much lighter and more polished than most generic graph frameworks.
 
-Repository: `codeledge/entitree-flex`
+Useful features:
 
-A low-level family-tree-oriented layout algorithm supporting parents, children and side nodes such as spouses. It may be worth testing if ELK requires too much constraint work. Its GPL-3.0 license needs to be considered before production use.
+- SVG rendering;
+- built-in expand/collapse;
+- zoom/pan and fit/center behavior;
+- search and selection;
+- custom `nodeTemplate` HTML;
+- approximately 88 KB minified package in the current CDN release;
+- no need to bring a Vue/React graph framework into the site.
 
-### js_family_tree
+Its fundamental limitation is the data model:
 
-Repository: `BenPortner/js_family_tree`
+```text
+node
+└── children[]
+```
 
-Interesting because it explicitly models persons and unions. Keep it as a structural/layout reference rather than the main renderer.
+Each node has exactly one structural parent. There is no native marriage/union or multi-parent edge.
 
-### GoJS Genogram
+A genealogy adapter can insert family/union nodes, but with a strict tree one spouse then has to become structurally subordinate or the same person must be duplicated in different branches. This may still be acceptable for selected descendant/ancestor projections, but it is not a lossless general family graph renderer.
 
-GoJS has a mature custom genogram layout where marriage pairs are treated specially by the layout algorithm. It is a useful benchmark for what correct spouse/family geometry should look like, but GoJS is commercial and is not preferred as a dependency for an independence-oriented open project.
+Current licensing is a community/commercial model rather than a conventional permissive OSS license, which also weakens it as a long-term foundation.
 
-### Cytoscape.js / D3
+## treeSpider
 
-Both can render our explicit union-node graph and provide maximum freedom, but they require more interaction/layout code than Vue Flow. Keep them as lower-level fallbacks.
+Repository: `paulosabayomi/treeSpider`
+
+Visually interesting because it is compact, relatively stylish, and includes several tree layouts without the visual weight of a generic node editor.
+
+Strengths:
+
+- MIT licensed;
+- D3 + TypeScript;
+- responsive zoomable trees;
+- expand/collapse events;
+- multiple layout styles;
+- relatively small conceptual/API surface.
+
+Its canonical data model is explicitly:
+
+```text
+id + parentId
+```
+
+so it has the same structural genealogy limitation as ApexTree. It can be a good renderer for a projected hierarchy, but cannot natively represent two parents or a union that owns children.
+
+Keep it in the visual comparison because its design/runtime tradeoff may still be attractive enough to justify a specialized genealogy projection.
+
+## JSCharting Org
+
+JSCharting is proprietary/commercial, but technically it is the most interesting new org-chart candidate because it supports multiple parents natively.
+
+That allows this projection:
+
+```text
+P1 ─┐
+    ├── F1 ── child
+P2 ─┘
+```
+
+where `F1` is a generated family/union point with both partners as parents. Multiple children then point to `F1`. A second partnership creates `F2`, so children remain attached to the correct couple without duplicating a person.
+
+Useful features:
+
+- automatic organizational layout;
+- multiple parent nodes;
+- connector customization;
+- HTML-rich node labels/annotations;
+- SVG rendering;
+- interactive hierarchy navigation;
+- no framework dependency.
+
+The main risk is strategic rather than technical: it is a paid proprietary dependency. It should be evaluated on visual quality and implementation savings before considering whether the license tradeoff is justified.
+
+## DHTMLX Diagram
+
+DHTMLX is visually polished and has explicit `partner` shapes in org-chart mode. It also supports custom HTML shapes, zoom, expand/collapse, and a complete editor if that were ever useful.
+
+However its own documentation states that partner items cannot themselves be parent items. That is a direct problem for genealogy with multiple marriages: children attach to the primary hierarchy node rather than to a specific partner relationship.
+
+So its native org-chart family model is visually attractive but not semantically strong enough for our main requirement.
+
+A custom DHTMLX default-mode graph with explicit union nodes is possible, but at that point we would be paying the complexity/license cost while owning more layout ourselves.
+
+The 2026 open-source package is GPL-2.0-only; non-GPL/commercial usage requires a commercial license.
+
+## Vue Flow + ELK
+
+Repository: `bcakmakoglu/vue-flow` plus `elkjs`.
+
+This remains the correctness/control fallback:
+
+```text
+canonical graph
+   ↓
+explicit person + family nodes
+   ↓
+ELK layout
+   ↓
+Vue Flow presentation
+```
+
+Strengths:
+
+- exact genealogy semantics can be preserved;
+- arbitrary custom person cards and union nodes;
+- interaction/edit affordances are easy to add;
+- layout and renderer are replaceable independently.
+
+Weaknesses:
+
+- comparatively heavy conceptual and runtime stack;
+- cards still need to be built manually;
+- genealogy-specific layout constraints become our responsibility;
+- easy to overbuild a simple browse-first tree.
+
+Do not choose this merely because it is flexible.
+
+## Topola
+
+Repository: `PeWu/topola`.
+
+Topola is no longer a production UI candidate, but remains a useful genealogy-domain and layout reference because it models families as first-class records and one person can participate in multiple spouse families.
+
+Study its traversal and family handling; do not inherit its visual design or renderer-specific schema.
+
+## Custom SVG / HTML
+
+The custom demo represents the opposite lower bound: own the visual layer completely and outsource only layout — or eventually own a small genealogy-specific layout as well.
+
+This becomes attractive if all full renderers require substantial card restyling anyway. In that case the real reusable component we need may be **layout**, not a complete graph UI framework.
 
 ## Renderer-independent contract
 
@@ -169,33 +210,39 @@ generated/genealogy.json
         ↓
 view-specific projection
         ↓
-layout engine
-        ↓
-renderer
+layout / renderer adapter
 ```
 
 A renderer change must not alter canonical Markdown or stable person/family identities.
 
-## First proof-of-concept
+## Evaluation matrix
 
-The next useful implementation spike should not build the whole site. It should render one real family slice with custom cards and explicit union nodes.
+The practical shortlist should now be judged on these dimensions:
 
-Test at minimum:
+| Candidate | Visual baseline | Marriage semantics | Lightness | Custom cards | License |
+| --- | --- | --- | --- | --- | --- |
+| Family Chart | good | genealogy-specific but multi-spouse issue | medium | yes | MIT |
+| ApexTree | very good | hierarchy only | very good | yes | community/commercial |
+| treeSpider | good | hierarchy only | good | limited/moderate | MIT |
+| JSCharting Org | very good | multiple parents; union-node projection works | good | yes | commercial |
+| DHTMLX Diagram | very good | partner UI but weak child-per-union semantics | medium | yes | GPL-2 / commercial |
+| Vue Flow + ELK | entirely ours | excellent | weak/medium | entirely ours | MIT |
+| Custom SVG | entirely ours | excellent if layout is ours | excellent | entirely ours | ours |
 
-1. one marriage with children;
-2. one person with two partnerships and children from both;
-3. half-siblings;
-4. spouse ancestors;
-5. one unknown/missing parent;
-6. a larger collateral branch;
-7. fit/zoom/navigation with the full roughly 250-person dataset.
+## Decision criterion
 
-The primary evaluation criteria are:
+Do not choose from toy screenshots alone. The eventual winner must be tested with the real imported genealogy, especially:
 
-- children visually originate from the correct partnership;
-- spouses are visually obvious without turning the chart into an org chart;
-- cards can look like part of the Genealogy Library site rather than a third-party widget;
-- the graph remains readable with real family density;
-- clicking/focusing a person can become the basis for future lightweight editing.
+1. multiple marriages with children from each union;
+2. half-siblings;
+3. missing/unknown parent;
+4. spouse ancestry;
+5. pedigree collapse;
+6. wide collateral branches;
+7. roughly 250 people and mobile interaction;
+8. initial load and focus/expand latency with animations disabled;
+9. how much custom code is required before the cards actually look finished.
 
-If Vue Flow + ELK cannot satisfy the family geometry cleanly, keep the generated graph and Vue Flow presentation layer and replace only the layout algorithm.
+The likely decision is no longer "which graph framework is most capable?" but rather:
+
+> Which option gives us the best family geometry and interaction with the least code that the user can see or feel?

@@ -6,32 +6,56 @@
   <title>Genealogy tree demos</title>
   <link rel="stylesheet" href="./demo.css">
   <style>
-    .home { max-width: 900px; margin: 70px auto; padding: 0 20px; }
+    .home { max-width: 1100px; margin: 70px auto; padding: 0 20px; }
     h1 { font-size: clamp(30px, 5vw, 54px); letter-spacing: -.04em; margin-bottom: 12px; }
-    .lead { color: #6f685f; font-size: 18px; line-height: 1.55; max-width: 700px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 14px; margin-top: 32px; }
+    .lead { color: #6f685f; font-size: 18px; line-height: 1.55; max-width: 780px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 14px; margin-top: 32px; }
     .choice { display: block; padding: 20px; border: 1px solid rgba(37,35,31,.12); border-radius: 16px; background: rgba(255,255,255,.8); color: inherit; text-decoration: none; box-shadow: 0 8px 24px rgba(59,51,42,.05); }
     .choice:hover { transform: translateY(-1px); box-shadow: 0 12px 30px rgba(59,51,42,.09); }
     .choice strong { display:block; margin-bottom:8px; font-size:16px; }
     .choice span { color:#766f66; font-size:13px; line-height:1.45; }
+    .tag { display:inline-block; margin-top:10px; padding:3px 7px; border-radius:999px; background:#eeeae2; color:#70685e; font-size:10px; text-transform:uppercase; letter-spacing:.05em; }
   </style>
 </head>
 <body>
   <div class="home">
-    <h1>Same family, three renderers.</h1>
-    <p class="lead">The sample deliberately contains remarriage, children from two unions, and a single-parent union. The goal is to compare layout quality, design freedom, and implementation weight — not to pick a winner from a toy hierarchy.</p>
+    <h1>Same family, seven renderers.</h1>
+    <p class="lead">The sample deliberately contains remarriage, children from two unions, and a single-parent union. Compare visual quality and runtime feel, but also watch whether the renderer can preserve which children belong to which partnership.</p>
     <div class="grid">
       <a class="choice" href="./family-chart.html">
         <strong>Family Chart</strong>
-        <span>Genealogy-specific layout with restyled HTML cards. Fastest route to something usable, but its person-centric relation model has known multi-spouse limitations.</span>
+        <span>Genealogy-specific layout with our custom HTML card. Animation is disabled in this pass to test whether the perceived slowness comes from transitions or from layout/rendering itself.</span>
+        <small class="tag">MIT · genealogy-specific</small>
+      </a>
+      <a class="choice" href="./apextree.html">
+        <strong>ApexTree</strong>
+        <span>Very compact SVG tree with polished expand/collapse and customizable HTML node templates. The limitation is structural: nested tree data has only one parent path.</span>
+        <small class="tag">light · hierarchy-only</small>
+      </a>
+      <a class="choice" href="./tree-spider.html">
+        <strong>treeSpider</strong>
+        <span>Lightweight D3/TypeScript renderer with several layouts and a cleaner default aesthetic. It also uses a strict id + parentId hierarchy, so marriage needs a projection hack.</span>
+        <small class="tag">MIT · hierarchy-only</small>
+      </a>
+      <a class="choice" href="./jscharting.html">
+        <strong>JSCharting Org</strong>
+        <span>Commercial, but technically interesting: it supports multiple parents natively. This demo uses invisible-ish family/union points so children descend from the correct couple.</span>
+        <small class="tag">paid · multi-parent</small>
+      </a>
+      <a class="choice" href="./dhtmlx.html">
+        <strong>DHTMLX Diagram</strong>
+        <span>Polished org chart with native partner cards and custom HTML shapes. The partner node cannot itself be a parent, so children are not naturally associated with a specific marriage.</span>
+        <small class="tag">GPL / paid · partner UI</small>
       </a>
       <a class="choice" href="./vue-flow-elk.html">
         <strong>Vue Flow + ELK</strong>
-        <span>Fully custom cards and interactions. Explicit union nodes keep children attached to a specific couple; ELK computes positions.</span>
+        <span>Maximum UI freedom and explicit family nodes, but visibly the heaviest engineering stack in this comparison.</span>
+        <small class="tag">MIT · custom graph</small>
       </a>
       <a class="choice" href="./custom-svg.html">
         <strong>Custom SVG</strong>
-        <span>A deliberately tiny renderer showing how little code the visual layer can be if we own the genealogy layout contract ourselves.</span>
+        <span>The visual baseline: almost no framework, full card/edge control, but positions are hand-authored. If this feels best, the real problem to solve is layout rather than rendering.</span>
+        <small class="tag">baseline</small>
       </a>
     </div>
   </div>
