@@ -12,7 +12,7 @@ A renderer is only a candidate if it can plausibly satisfy all three requirement
 2. **Correct multi-partner genealogy** — one person may have multiple marriages/partnerships, and children must belong to the correct union rather than merely to one structural parent.
 3. **Reusable custom person card** — the visual card must be fully ours and embeddable as the same reusable UI component inside and outside the tree, not a renderer-specific imitation.
 
-Visual polish, load time, licensing and implementation weight are comparison criteria only after those three requirements are met.
+Visual polish, load time, licensing, implementation weight and generation-level readability are comparison criteria after those three requirements are met.
 
 ## Canonical visualization model
 
@@ -37,6 +37,85 @@ P2 ─┘
 ```
 
 A second partnership creates a different family/union record. This is non-negotiable because it prevents children from being attached to the wrong partner relationship.
+
+The renderer spike uses one neutral input shape:
+
+```js
+{
+  root: 'P3',
+  people: [
+    {
+      id: 'P3',
+      name: 'Daniel Morgan',
+      years: '1973–',
+      sex: 'M',
+      deceased: false,
+      photo: ''
+    }
+  ],
+  families: [
+    {
+      id: 'F4',
+      partners: ['P3', 'P4'],
+      children: ['P6', 'P7'],
+      label: '1998–2010'
+    }
+  ]
+}
+```
+
+`demos/renderer-adapters.js` is the single projection layer from this neutral shape to renderer-specific input. The renderer demos no longer hand-build relationships independently.
+
+### Family Chart projection
+
+Family Chart wants person-centric records:
+
+```js
+{
+  id: 'P3',
+  data: { gender: 'M', name: 'Daniel Morgan', years: '1973–' },
+  rels: {
+    parents: ['P1', 'P2'],
+    spouses: ['P4', 'P5'],
+    children: ['P6', 'P7', 'P8']
+  }
+}
+```
+
+All relations are made bidirectional by the adapter. This format is simple, but it flattens union context: the renderer sees spouses and children at person level rather than a persistent `family -> children` edge. That is why multi-spouse placement remains Family Chart's main correctness risk.
+
+### BALKAN FamilyTreeJS 2 projection
+
+FamilyTreeJS 2 wants family-member records:
+
+```js
+{
+  id: 'P6',
+  name: 'Nina Morgan',
+  sexOrGender: 'female',
+  fatherId: 'P3',
+  motherId: 'P4',
+  spouseIds: [],
+  childIds: []
+}
+```
+
+The adapter also forwards PersonCard fields such as `years`, `sex`, `deceased` and `photo`. For ordinary mother/father families this projection retains the actual parent pair directly, which is stronger than Family Chart's flattened spouse/child representation.
+
+The remaining question for BALKAN is layout semantics rather than relationship storage: its current focus-centric layout may place relatives of the same generation at different vertical levels. Real-data testing must establish whether this can be made readable enough without replacing the layout engine.
+
+### Vue Flow + ELK projection
+
+Vue Flow + ELK receives the neutral model almost literally as a graph:
+
+```text
+person P3 -> family F4 <- person P4
+                    |
+                    +-> person P6
+                    +-> person P7
+```
+
+Persons and families are separate nodes; partner-to-family and family-to-child links are explicit edges. This preserves union semantics exactly and therefore remains the correctness/control fallback when genealogy-specific renderers cannot produce acceptable geometry.
 
 ## Shared PersonCard contract
 
@@ -73,11 +152,11 @@ The `photo` value belongs to PersonCard data. The tree renderer must not impleme
 
 ## Active shortlist
 
-### Family Chart — current front-runner
+### Family Chart — current front-runner for generation readability
 
 Repository: `donatso/family-chart`.
 
-Why it currently leads the working demos:
+Why it remains strong:
 
 - genealogy-specific;
 - built-in family-tree interaction;
@@ -86,7 +165,7 @@ Why it currently leads the working demos:
 - can host the shared PersonCard;
 - MIT licensed;
 - relatively small integration surface;
-- currently the most reliable working browser demo among the shortlisted genealogy-specific options.
+- its vertical hierarchy currently reads more naturally as generations than the BALKAN focus-centric demo.
 
 Blocking issue:
 
@@ -94,9 +173,9 @@ Its current multi-spouse layout can place children under the wrong couple. This 
 
 The demo disables transition animations and explicitly neutralizes the library's own card background, border, shadow and pseudo-elements so only the shared PersonCard is visible.
 
-### BALKAN FamilyTreeJS 2 — API fit, runtime blocked
+### BALKAN FamilyTreeJS 2 — working finalist
 
-On paper this remains a strong fit:
+BALKAN now runs successfully in the browser demo and remains a strong fit:
 
 - genealogy-specific rather than a generic org-chart projection;
 - native spouse relationships (`spouseIds`);
@@ -105,13 +184,13 @@ On paper this remains a strong fit:
 - children can be attached to the actual parent pair;
 - collapse state is part of the public API through `collapsedIds`;
 - templates support arbitrary HTML via `template.html`;
-- template width/height and relationship-specific node templates are customizable.
+- the exact shared PersonCard renders inside its node template.
 
-However the current browser/CDN demo did not start successfully in real testing. Until that integration is fixed and shown working, BALKAN is not ahead of Family Chart despite the stronger API fit.
+Current blocker: the default layout is focus-centric. Parents/in-laws can be placed beside rather than strictly above their children, so generations are not guaranteed to share a horizontal level. Real-data testing must show whether template/layout settings can make this sufficiently readable.
 
 Primary strategic risk remains proprietary/commercial licensing.
 
-### Vue Flow + ELK
+### Vue Flow + ELK — third/fallback candidate
 
 Repositories: `bcakmakoglu/vue-flow` and `kieler/elkjs`.
 
@@ -130,7 +209,7 @@ Risks:
 - two libraries and more runtime/conceptual weight;
 - easy to overbuild a browse-first site.
 
-This is the correctness/control fallback, not the preferred answer while Family Chart remains workable.
+This is the correctness/control fallback, not the preferred answer while one of the genealogy-specific renderers remains workable.
 
 ## Rejected candidates
 
@@ -150,15 +229,19 @@ Rejected renderers may still be used as design or implementation references. The
 
 ## Current comparison
 
-| Candidate | Collapse | Multiple marriages / correct parent pair | Exact shared card | Current status |
-| --- | --- | --- | --- | --- |
-| Family Chart | yes | native relations, but known multi-spouse layout risk | yes | **front-runner / working** |
-| BALKAN FamilyTreeJS 2 | yes | native | yes in API design | browser demo currently fails to start |
-| Vue Flow + ELK | ours | exact through explicit union nodes | yes | fallback; heavier implementation |
+| Candidate | Collapse | Multiple marriages / correct parent pair | Exact shared card | Generation readability | Current status |
+| --- | --- | --- | --- | --- | --- |
+| Family Chart | yes | native relations, but known multi-spouse layout risk | yes | good in current demo | **finalist / working** |
+| BALKAN FamilyTreeJS 2 | yes | native parent pair | yes | focus-centric; must be tested/tuned | **finalist / working** |
+| Vue Flow + ELK | ours | exact through explicit union nodes | yes | entirely under our control | third/fallback; heavier implementation |
 
-## Final evaluation
+## Real-data testing
 
-The remaining candidates should be judged on the same real genealogy cases:
+Renderer comparison should use the same neutral real-data snapshot and the same root person. Renderer-specific payloads must be generated through `renderer-adapters.js`, not edited by hand.
+
+Real genealogy fixtures must not be committed accidentally to the public repository. `.gitignore` excludes `demos/private-data/` and `*.private.json` / `*.private.js`. A deliberate decision is required before any living-relative data is published through Pages.
+
+The remaining candidates should be judged on:
 
 - multiple marriages with children from each union;
 - half-siblings;
@@ -167,6 +250,8 @@ The remaining candidates should be judged on the same real genealogy cases:
 - pedigree collapse;
 - wide collateral branches;
 - roughly 250 people;
+- parents never being visually below their children;
+- people of the same generation staying roughly aligned where possible;
 - mobile interaction;
 - expand/collapse latency;
 - initial load time;
