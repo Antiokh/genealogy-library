@@ -4,6 +4,19 @@ A repository-first genealogy library: people and their source data live in Git, 
 
 The repository must remain useful independently of MyHeritage, Genotek, a specific visualization library, or even the current site generator.
 
+## Product direction
+
+The primary interface is for **reading, exploring, and sharing family history**, with occasional corrections and additions. This is not intended to become a full-time genealogy research workstation like Gramps.
+
+Normal use should favor person pages, search, tree/pedigree exploration and other readable views. Import, reconciliation, conflict resolution and advanced editing are maintenance workflows that may be used only occasionally.
+
+Git remains the source of truth and version history. Any editing wizard or import UI should ultimately produce transparent changes to ordinary repository files rather than introduce a second database.
+
+Design notes:
+
+- [Product direction and reference projects](docs/product-direction-and-references.md)
+- [GEDCOM import and conflict strategy](docs/gedcom-import-conflicts.md)
+
 ## Core principles
 
 ### 1. One person = one editable record
