@@ -28,12 +28,12 @@
     <a href="./index.html">Overview</a>
     <a href="./person-card.html">Person card</a>
     <a href="./family-chart.html">Family Chart</a>
-    <a href="./jscharting.html">JSCharting</a>
+    <a href="./balkan-familytree2.html">BALKAN FamilyTreeJS 2</a>
     <a class="active" href="./vue-flow-elk.html">Vue Flow + ELK</a>
   </nav>
 </header>
 <main>
-  <p class="demo-note">Vue Flow still owns interaction and ELK still owns coordinates, but the person node now contains the exact same shared PersonCard Web Component as the other renderer demos. Only the handles belong to Vue Flow.</p>
+  <p class="demo-note">Vue Flow still owns interaction and ELK still owns coordinates, but the person node contains the exact same shared PersonCard Web Component as the genealogy-specific demos. Only the handles belong to Vue Flow.</p>
   <div class="canvas-shell"><div id="app">
     <vue-flow :nodes="nodes" :edges="edges" :fit-view-on-init="true" :min-zoom="0.25" :max-zoom="2" :nodes-draggable="false">
       <template #node-person="{ data }">
