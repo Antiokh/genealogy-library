@@ -21,8 +21,8 @@
     #FamilyChart div.card-inner,
     #FamilyChart .genealogy-card-host {
       width: 240px !important;
-      height: 104px !important;
-      min-height: 104px !important;
+      height: 120px !important;
+      min-height: 120px !important;
       margin: 0 !important;
       padding: 0 !important;
       border: 0 !important;
@@ -69,15 +69,18 @@
   const chart = f3.createChart('#FamilyChart', data)
     .setTransitionTime(0)
     .setCardXSpacing(286)
-    .setCardYSpacing(156);
+    .setCardYSpacing(172);
 
   chart.setCardHtml()
     .setCardInnerHtmlCreator(d => {
       const p = d.data.data;
-      const name = [p['first name'], p['last name']].filter(Boolean).join(' ');
+      const sourceName = [p['first name'], p['last name']].filter(Boolean).join(' ');
       return `<div class="card-inner genealogy-card-host">${personCardElementHtml({
         id: d.data.id,
-        name,
+        name: sourceName,
+        cardName: p.cardName || '',
+        birthSurname: p.birthSurname || '',
+        marriedSurname: p.marriedSurname || '',
         years: p.years || '',
         sex: p.sex || p.gender || '',
         deceased: Boolean(p.deceased),
