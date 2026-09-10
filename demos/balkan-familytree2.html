@@ -73,7 +73,8 @@
   </div>
 </main>
 <script type="module">
-  import { family, byId } from './sample-data.js';
+  import { family } from './sample-data.js';
+  import { toBalkanFamilyTree2Data } from './renderer-adapters.js';
   import { personCardElementHtml, PERSON_CARD_WIDTH, PERSON_CARD_HEIGHT } from './person-card.js';
 
   const status = document.getElementById('balkanStatus');
@@ -119,44 +120,6 @@
     throw new Error(failures.join('\n'));
   }
 
-  function buildMembers() {
-    const members = Object.fromEntries(family.people.map(person => [person.id, {
-      id: person.id,
-      name: person.name,
-      years: person.years,
-      sex: person.sex,
-      deceased: Boolean(person.deceased),
-      photo: person.photo || '',
-      sexOrGender: person.sex === 'M' ? 'male' : person.sex === 'F' ? 'female' : undefined,
-      spouseIds: [],
-      childIds: []
-    }]));
-
-    for (const unit of family.families) {
-      const partners = unit.partners;
-
-      if (partners.length === 2) {
-        const [a, b] = partners;
-        if (!members[a].spouseIds.includes(b)) members[a].spouseIds.push(b);
-        if (!members[b].spouseIds.includes(a)) members[b].spouseIds.push(a);
-      }
-
-      for (const childId of unit.children) {
-        for (const parentId of partners) {
-          if (!members[parentId].childIds.includes(childId)) members[parentId].childIds.push(childId);
-        }
-
-        const child = members[childId];
-        const maleParent = partners.find(id => byId[id]?.sex === 'M');
-        const femaleParent = partners.find(id => byId[id]?.sex === 'F');
-        if (maleParent) child.fatherId = maleParent;
-        if (femaleParent) child.motherId = femaleParent;
-      }
-    }
-
-    return Object.values(members);
-  }
-
   function configureTemplate(template) {
     if (!template || typeof template !== 'object') return;
 
@@ -180,9 +143,6 @@
     const FamilyTree2 = loaded.FamilyTree2;
     setStatus('Library loaded. Registering template…');
 
-    // FamilyTreeJS 2 exposes `template` as a getter-only property on the tree.
-    // `createTemplate` returns and registers the named template; the instance
-    // selects it through the writable `templateName` accessor.
     const customTemplate = FamilyTree2.createTemplate('genealogyPersonCard', 'base');
     configureTemplate(customTemplate);
 
@@ -221,16 +181,18 @@
       setStatus(`Running · ${sourceLabel} · ${tree.templateName}`, 'ok');
     });
 
-    tree.addFamilyMembers(buildMembers()).draw('P3');
+    tree.addFamilyMembers(toBalkanFamilyTree2Data(family)).draw(family.root);
 
     collapseButton.addEventListener('click', () => {
-      tree.collapsedIds = ['P6', 'P7', 'P8', 'P13'];
-      tree.draw('P3', null, () => tree.fit());
+      tree.collapsedIds = family.people
+        .filter(person => !family.families.some(unit => unit.partners.includes(person.id)))
+        .map(person => person.id);
+      tree.draw(family.root, null, () => tree.fit());
     });
 
     expandButton.addEventListener('click', () => {
       tree.collapsedIds = [];
-      tree.draw('P3', null, () => tree.fit());
+      tree.draw(family.root, null, () => tree.fit());
     });
   } catch (error) {
     console.error(error);
