@@ -98,8 +98,8 @@ export class GenealogyPersonCard extends HTMLElement {
         .avatar.female { --avatar-accent: #c48691; }
         .avatar.unknown { --avatar-accent: #aaa49b; }
         .avatar-photo {
-          width: 36px;
-          height: 36px;
+          width: 38px;
+          height: 38px;
           display: block;
           border-radius: 50%;
           object-fit: cover;
@@ -115,8 +115,8 @@ export class GenealogyPersonCard extends HTMLElement {
           content: '';
           position: absolute;
           z-index: 2;
-          right: -7px;
-          bottom: 5px;
+          right: -4px;
+          bottom: 7px;
           width: 30px;
           height: 5px;
           background: rgba(10,10,10,.96);
