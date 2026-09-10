@@ -25,7 +25,7 @@
   </nav>
 </header>
 <main>
-  <p class="demo-note">Free Family Chart with its default genealogy layout, but our own visual card. This is the quickest implementation; inspect Daniel Morgan's two unions and where the three children land.</p>
+  <p class="demo-note">Family Chart with its default genealogy layout and our own visual card. Transition time is set to zero in this version so we can separate layout/render cost from animation cost. Inspect Daniel Morgan's two unions and where the three children land.</p>
   <div class="canvas-shell"><div id="FamilyChart" class="f3"></div></div>
 </main>
 <script type="module">
@@ -65,7 +65,7 @@
   const initials = name => name.split(/\s+/).map(s => s[0]).slice(0, 2).join('');
 
   const chart = f3.createChart('#FamilyChart', data)
-    .setTransitionTime(280)
+    .setTransitionTime(0)
     .setCardXSpacing(220)
     .setCardYSpacing(120);
 
