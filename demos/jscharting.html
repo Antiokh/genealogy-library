@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JSCharting demo</title>
+  <link rel="stylesheet" href="./demo.css">
+  <style>
+    #JSC { width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+<header>
+  <strong>Tree demo</strong>
+  <nav>
+    <a href="./index.html">Overview</a>
+    <a href="./family-chart.html">Family Chart</a>
+    <a href="./apextree.html">ApexTree</a>
+    <a href="./tree-spider.html">treeSpider</a>
+    <a class="active" href="./jscharting.html">JSCharting</a>
+    <a href="./dhtmlx.html">DHTMLX</a>
+    <a href="./vue-flow-elk.html">Vue Flow + ELK</a>
+    <a href="./custom-svg.html">Custom SVG</a>
+  </nav>
+</header>
+<main>
+  <p class="demo-note">JSCharting is the most interesting org-chart candidate structurally because it supports multiple parents. Here each marriage/partnership is an explicit small union node whose parents are the two partners; children then descend from that union. This preserves which child belongs to which couple without duplicating people.</p>
+  <div class="canvas-shell"><div id="JSC"></div></div>
+</main>
+<script src="https://code.jscharting.com/latest/jscharting.js"></script>
+<script src="https://code.jscharting.com/latest/modules/types.js"></script>
+<script type="module">
+  import { family, byId } from './sample-data.js';
+
+  const initials = name => name.split(/\s+/).map(s => s[0]).slice(0, 2).join('');
+  const personPoint = (id, parent) => {
+    const p = byId[id];
+    return {
+      id,
+      x: p.name,
+      parent,
+      attributes: { years: p.years, initials: initials(p.name), kind: 'person' },
+      label: {
+        text: '<span style="font-size:15px;font-weight:600">%name</span><br><span style="font-size:11px;color:#81796f">%years</span>'
+      }
+    };
+  };
+
+  const parentFamily = Object.fromEntries(family.families.flatMap(f => f.children.map(child => [child, f.id])));
+  const points = family.people.map(p => personPoint(p.id, parentFamily[p.id]));
+
+  for (const unit of family.families) {
+    points.push({
+      id: unit.id,
+      x: unit.label || 'family',
+      parent: unit.partners.join(','),
+      attributes: { years: unit.label || '', kind: 'union' },
+      color: '#f3f0e9',
+      label: {
+        text: `<span style="font-size:11px;color:#71695f">${unit.label || 'family'}</span>`
+      },
+      annotation: { padding: [3, 7], margin: 5 }
+    });
+  }
+
+  JSC.chart('JSC', {
+    debug: false,
+    type: 'organizational',
+    animation_duration: 0,
+    defaultTooltip_enabled: false,
+    defaultAnnotation: {
+      padding: [8, 12],
+      margin: [18, 7]
+    },
+    defaultSeries: {
+      color: '#ffffff',
+      pointSelection: false
+    },
+    defaultPoint: {
+      focusGlow: false,
+      connectorLine: {
+        color: '#aaa298',
+        width: 1.2,
+        radius: [0, 7]
+      },
+      outline: { color: '#d8d3ca', width: 1 },
+      label: { style_color: '#26231f' },
+      annotation: { syncHeight_with: 'level' },
+      states: {
+        hover: {
+          color: '#ffffff',
+          outline: { color: '#9d9488', width: 1.5 }
+        }
+      }
+    },
+    series: [{ points }]
+  });
+</script>
+</body>
+</html>
