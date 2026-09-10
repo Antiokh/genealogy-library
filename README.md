@@ -16,6 +16,7 @@ Design notes:
 
 - [Product direction and reference projects](docs/product-direction-and-references.md)
 - [GEDCOM import and conflict strategy](docs/gedcom-import-conflicts.md)
+- [Charted Roots migration / compatibility contract](docs/charted-roots-migration-contract.md)
 
 ## Core principles
 
@@ -25,7 +26,7 @@ People are stored as ordinary Markdown/MDX records with frontmatter. Photos and 
 
 The physical folder structure is **not** the family tree. Kinship is stored only through stable person IDs in metadata.
 
-### 2. Folders are only for finding people
+### 2. Folders are only for finding records
 
 People are grouped by birth decade:
 
@@ -44,6 +45,35 @@ src/content/people/
 ```
 
 An estimated birth year is sufficient for choosing the decade. If the date is later corrected and the person moves to another decade, no relationship should break.
+
+Events are grouped by the year in which the event occurred:
+
+```text
+src/content/events/
+├── 1917/
+├── 1941/
+├── 1988/
+│   └── birth-anton-nazarov/
+│       └── index.md
+├── 2023/
+└── unknown/
+```
+
+The event path is navigation only. Event participants, places, sources and other semantic links use stable IDs. Moving an event after correcting its date must not break references.
+
+Other first-class entity folders may be introduced as needed, including:
+
+```text
+src/content/
+├── people/
+├── events/
+├── places/
+├── sources/
+├── citations/
+└── evidence/
+```
+
+These folders represent domain entities, not application UI. Presentation/index structures similar to Obsidian Bases belong to the site/configuration layer rather than canonical content.
 
 Paths are human navigation only. They are never identifiers.
 
@@ -88,7 +118,7 @@ Every build starts from zero and rebuilds the complete genealogy dataset from th
 Conceptually:
 
 ```text
-scan person records
+scan canonical records
         ↓
 parse frontmatter
         ↓
@@ -101,11 +131,11 @@ generate datasets and site views
 
 No generated relationship state from a previous build is trusted.
 
-This allows records to be renamed or moved between decade folders without affecting kinship.
+This allows records to be renamed or moved between time folders without affecting semantic links.
 
 ## Canonical data and generated graph
 
-Person records are the source of truth.
+Person records are the source of truth for people. As first-class events, places, sources, citations and evidence are introduced, their own canonical records become source data as well.
 
 The build produces a neutral genealogy graph, for example:
 
@@ -158,7 +188,8 @@ The importer should:
 3. Convert relationships to internal stable IDs.
 4. Preserve useful source identifiers such as GEDCOM XREFs as import metadata.
 5. Place people automatically into birth-decade folders.
-6. Handle unknown birth years through `unknown/`.
+6. Place first-class imported events into event-year folders when they are represented separately.
+7. Handle unknown birth/event years through `unknown/`.
 
 Example source metadata:
 
@@ -191,7 +222,7 @@ MyHeritage / Genotek / other source
                 ↓
              importer
                 ↓
-      repository person records
+      repository canonical records
                 ↓
               build
                 ↓
@@ -254,12 +285,13 @@ The important constraint is that the result remains an ordinary repository file.
 [ ] Create person template
 [ ] Implement repository validator
 [ ] Implement GEDCOM importer
-[ ] Build genealogy.json from person records
+[ ] Build genealogy.json from canonical records
 [ ] Add tree visualization adapter/view
 [ ] Add pedigree dataset/view
 [ ] Add person pages in Astro/Starlight
 [ ] Add simple "Add person" instructions/template
 [ ] Add interactive "Add person" wizard
+[ ] Consider first-class event/place/source/citation/evidence schemas
 [ ] Consider GEDCOM export
 ```
 
