@@ -10,7 +10,7 @@
   <style>
     #FamilyChart { width: 100%; height: 100%; }
     #FamilyChart .card_cont { overflow: visible; }
-    #FamilyChart .card-inner { width: 184px; min-height: 72px; }
+    #FamilyChart .card-inner { width: 184px; height: 72px; }
     #FamilyChart path.link { stroke: #aaa298; stroke-width: 1.35px; }
   </style>
 </head>
@@ -19,18 +19,20 @@
   <strong>Tree demo</strong>
   <nav>
     <a href="./index.html">Overview</a>
+    <a href="./person-card.html">Person card</a>
     <a class="active" href="./family-chart.html">Family Chart</a>
+    <a href="./jscharting.html">JSCharting</a>
     <a href="./vue-flow-elk.html">Vue Flow + ELK</a>
-    <a href="./custom-svg.html">Custom SVG</a>
   </nav>
 </header>
 <main>
-  <p class="demo-note">Family Chart with its default genealogy layout and our own visual card. Transition time is set to zero in this version so we can separate layout/render cost from animation cost. Inspect Daniel Morgan's two unions and where the three children land.</p>
+  <p class="demo-note">Family Chart with its genealogy layout, but the person node is now the exact shared PersonCard component used by the other renderer demos. Transition time is zero so layout/render cost is not hidden by animation.</p>
   <div class="canvas-shell"><div id="FamilyChart" class="f3"></div></div>
 </main>
 <script type="module">
   import * as f3 from 'https://esm.sh/family-chart@0.9.0';
   import { family } from './sample-data.js';
+  import { personCardElementHtml } from './person-card.js';
 
   const rels = Object.fromEntries(family.people.map(p => [p.id, { parents: [], spouses: [], children: [] }]));
 
@@ -62,8 +64,6 @@
     };
   });
 
-  const initials = name => name.split(/\s+/).map(s => s[0]).slice(0, 2).join('');
-
   const chart = f3.createChart('#FamilyChart', data)
     .setTransitionTime(0)
     .setCardXSpacing(220)
@@ -73,14 +73,11 @@
     .setCardInnerHtmlCreator(d => {
       const p = d.data.data;
       const name = [p['first name'], p['last name']].filter(Boolean).join(' ');
-      return `
-        <div class="person-card card-inner">
-          <div class="avatar">${initials(name)}</div>
-          <div>
-            <div class="name">${name}</div>
-            <div class="years">${p.years || ''}</div>
-          </div>
-        </div>`;
+      return `<div class="card-inner">${personCardElementHtml({
+        id: d.data.id,
+        name,
+        years: p.years || ''
+      })}</div>`;
     });
 
   chart.updateTree({ initial: true, main_id: 'P3' });
