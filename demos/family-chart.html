@@ -61,40 +61,10 @@
 <script type="module">
   import * as f3 from 'https://esm.sh/family-chart@0.9.0';
   import { family } from './sample-data.js';
+  import { toFamilyChartData } from './renderer-adapters.js';
   import { personCardElementHtml } from './person-card.js';
 
-  const rels = Object.fromEntries(family.people.map(p => [p.id, { parents: [], spouses: [], children: [] }]));
-
-  for (const unit of family.families) {
-    const [a, b] = unit.partners;
-    if (a && b) {
-      if (!rels[a].spouses.includes(b)) rels[a].spouses.push(b);
-      if (!rels[b].spouses.includes(a)) rels[b].spouses.push(a);
-    }
-    for (const child of unit.children) {
-      for (const parent of unit.partners) {
-        if (!rels[parent].children.includes(child)) rels[parent].children.push(child);
-        if (!rels[child].parents.includes(parent)) rels[child].parents.push(parent);
-      }
-    }
-  }
-
-  const data = family.people.map(person => {
-    const [firstName, ...rest] = person.name.split(' ');
-    return {
-      id: person.id,
-      data: {
-        gender: person.sex,
-        sex: person.sex,
-        deceased: Boolean(person.deceased),
-        photo: person.photo || '',
-        'first name': firstName,
-        'last name': rest.join(' '),
-        years: person.years
-      },
-      rels: rels[person.id]
-    };
-  });
+  const data = toFamilyChartData(family);
 
   const chart = f3.createChart('#FamilyChart', data)
     .setTransitionTime(0)
@@ -115,7 +85,7 @@
       })}</div>`;
     });
 
-  chart.updateTree({ initial: true, main_id: 'P3' });
+  chart.updateTree({ initial: true, main_id: family.root });
 </script>
 </body>
 </html>
