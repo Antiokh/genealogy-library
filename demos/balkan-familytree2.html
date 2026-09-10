@@ -109,9 +109,7 @@
       try {
         setStatus(`Loading library: ${source.includes('jsdelivr') ? 'jsDelivr fallback' : 'BALKAN CDN'}…`);
         await loadScript(source);
-        if (window.FamilyTree2) {
-          return { FamilyTree2: window.FamilyTree2, source };
-        }
+        if (window.FamilyTree2) return { FamilyTree2: window.FamilyTree2, source };
         failures.push(`${source}: script loaded but window.FamilyTree2 is missing`);
       } catch (error) {
         failures.push(error.message);
@@ -180,30 +178,23 @@
   try {
     const loaded = await loadFamilyTree2();
     const FamilyTree2 = loaded.FamilyTree2;
-    setStatus(`Library loaded. Building tree…`);
+    setStatus('Library loaded. Registering template…');
 
-    const tree = new FamilyTree2(document.getElementById('BalkanTree'));
-    tree.readOnly = true;
-    tree.navigationBar = false;
+    // FamilyTreeJS 2 exposes `template` as a getter-only property on the tree.
+    // `createTemplate` returns and registers the named template; the instance
+    // selects it through the writable `templateName` accessor.
+    const customTemplate = FamilyTree2.createTemplate('genealogyPersonCard', 'base');
+    configureTemplate(customTemplate);
 
-    // Follow the current FamilyTreeJS 2 documentation literally: clone the
-    // base template, assign it to the tree, then set the custom template name.
-    tree.template = FamilyTree2.createTemplate('genealogyPersonCard', 'base');
-    tree.templateName = 'genealogyPersonCard';
-
-    configureTemplate(tree.template);
-
-    // Relationship variants can override base dimensions/content. Only touch
-    // documented object templates; do not blindly mutate every value in nodes.
     const relationshipTypes = [
       'focus', 'spouse', 'parent', 'child', 'childInLaw', 'sibling',
       'parentSibling', 'parentInLaw', 'pibling', 'stepParent'
     ];
     for (const type of relationshipTypes) {
-      configureTemplate(tree.template.nodes?.[type]);
+      configureTemplate(customTemplate.nodes?.[type]);
     }
 
-    const separations = tree.template.separations;
+    const separations = customTemplate.separations;
     if (separations) {
       separations.focusSide = 34;
       separations.parentSide = 34;
@@ -215,12 +206,19 @@
       separations.childLevel = 108;
     }
 
+    const tree = new FamilyTree2(document.getElementById('BalkanTree'));
+    tree.readOnly = true;
+    tree.navigationBar = false;
+    tree.templateName = 'genealogyPersonCard';
+
+    setStatus(`Template selected: ${tree.templateName}. Building tree…`);
+
     tree.onLoaded(() => {
       tree.fit();
       collapseButton.disabled = false;
       expandButton.disabled = false;
       const sourceLabel = loaded.source.includes('jsdelivr') ? 'jsDelivr/NPM' : 'BALKAN CDN';
-      setStatus(`Running · ${sourceLabel}`, 'ok');
+      setStatus(`Running · ${sourceLabel} · ${tree.templateName}`, 'ok');
     });
 
     tree.addFamilyMembers(buildMembers()).draw('P3');
