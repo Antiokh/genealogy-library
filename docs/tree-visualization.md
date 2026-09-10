@@ -10,7 +10,7 @@ A renderer is only a candidate if it can plausibly satisfy all three requirement
 
 1. **Expand/collapse** — users must be able to hide/show branches without rebuilding the page manually.
 2. **Correct multi-partner genealogy** — one person may have multiple marriages/partnerships, and children must belong to the correct union rather than merely to one structural parent.
-3. **Custom person card** — the visual card must be fully ours and usable as a reusable UI component, not a fixed third-party widget skin.
+3. **Reusable custom person card** — the visual card must be fully ours and embeddable as the same reusable UI component inside and outside the tree, not a renderer-specific imitation.
 
 Visual polish, load time, licensing and implementation weight are comparison criteria only after those three requirements are met.
 
@@ -38,6 +38,26 @@ P2 ─┘
 
 A second partnership creates a different family/union record. This is non-negotiable because it prevents children from being attached to the wrong partner relationship.
 
+## Shared PersonCard contract
+
+The visualization spike now has one card implementation:
+
+```text
+demos/person-card.js
+        ↓
+genealogy-person-card
+        ├── Family Chart
+        ├── JSCharting
+        ├── Vue Flow + ELK
+        └── standalone person-card.html
+```
+
+Every renderer must host this exact component or an eventual production equivalent with the same component boundary. Separate renderer-specific card markup is no longer acceptable for comparison because it makes visual and integration cost impossible to compare fairly.
+
+The current demo implementation is a Web Component so it can be embedded independently of a framework. That does not force the production site to use Web Components permanently; it establishes the architectural requirement that the person card belongs to Genealogy Library, not to the tree library.
+
+If a renderer cannot render, size, interact with or event-bind the shared component cleanly, that is a renderer limitation and counts against the candidate.
+
 ## Active shortlist
 
 ### Family Chart
@@ -49,7 +69,8 @@ Why it remains:
 - genealogy-specific;
 - built-in family-tree interaction;
 - branch expansion/collapse behavior;
-- custom HTML card rendering;
+- accepts custom HTML card rendering;
+- can host the shared PersonCard;
 - MIT licensed;
 - relatively small integration surface.
 
@@ -66,16 +87,16 @@ Why it remains:
 - supports multiple parents in organizational layouts;
 - explicit generated union nodes can therefore have both partners as parents;
 - children can descend structurally from the correct union;
-- node visuals are highly customizable;
 - expand/collapse and hierarchy interaction are available;
 - no application framework is required.
 
-Risks:
+Blocking component test:
 
-- proprietary/commercial dependency;
-- custom-card integration is HTML/annotation-oriented rather than naturally framework-component-oriented.
+The demo now embeds the exact `genealogy-person-card` through the HTML annotation/label layer rather than maintaining a JSCharting-specific lookalike. If the browser test shows that JSCharting cannot render or measure the component reliably, it fails hard requirement 3 and should be removed from the shortlist.
 
-This is currently the strongest generic renderer from a relationship-layout perspective.
+Other risk: proprietary/commercial dependency.
+
+This is currently the strongest generic renderer from a relationship-layout perspective, provided it passes the shared-component test.
 
 ### Vue Flow + ELK
 
@@ -84,7 +105,8 @@ Repositories: `bcakmakoglu/vue-flow` and `kieler/elkjs`.
 Why it remains:
 
 - arbitrary graph semantics, including explicit family nodes;
-- person cards can be real Vue components;
+- arbitrary component nodes;
+- the same PersonCard can be hosted directly inside a custom node;
 - zoom/pan and selection are solved;
 - renderer and layout engine remain replaceable independently.
 
@@ -103,9 +125,7 @@ This is the next serious candidate to demo because it is genealogy-specific and 
 
 Its main strategic downside is commercial licensing. If its interaction and layout save enough implementation work, that may still be acceptable; if not, it should not become a core dependency.
 
-### Custom SVG — baseline only
-
-The custom SVG demo is not a library candidate. It remains as a visual baseline and proves that our visible rendering layer can be very small if we own or reuse a suitable genealogy-specific layout algorithm.
+The demo must host the same shared PersonCard component. A renderer-native template that merely looks similar does not pass the component requirement.
 
 ## Rejected candidates
 
@@ -118,6 +138,7 @@ The following are no longer active implementation candidates:
 | d3-org-chart | secondary spouse connections do not participate in layout; one structural parent remains |
 | DHTMLX Diagram org chart | partner nodes cannot themselves be parents, preventing clean child-per-union semantics |
 | Topola | genealogy semantics are useful, but production visual design is too rigid/dated for this product |
+| Custom SVG demo | not a library candidate; removed after extracting the renderer-independent PersonCard baseline |
 
 Rejected renderers may still be used as design or implementation references. They should not receive more demo/integration work unless their underlying model changes.
 
@@ -135,7 +156,7 @@ The remaining candidates should be judged on the same real genealogy cases:
 - mobile interaction;
 - expand/collapse latency;
 - initial load time;
-- amount of custom code required for a finished card;
-- ability to use the same person-card component outside the tree.
+- clean embedding of the exact same person-card component;
+- ability for card click/hover/actions to remain owned by Genealogy Library rather than the renderer.
 
 The goal is not the most capable graph library. The goal is the smallest maintainable renderer that handles family geometry correctly, feels fast, and lets Genealogy Library own the visual language.
