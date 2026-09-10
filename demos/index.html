@@ -6,21 +6,27 @@
   <title>Genealogy tree demos</title>
   <link rel="stylesheet" href="./demo.css">
   <style>
-    .home { max-width: 980px; margin: 70px auto; padding: 0 20px; }
+    .home { max-width: 980px; margin: 46px auto; padding: 0 20px; }
     h1 { font-size: clamp(30px, 5vw, 54px); letter-spacing: -.04em; margin-bottom: 12px; }
     .lead { color: #6f685f; font-size: 18px; line-height: 1.55; max-width: 760px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 14px; margin-top: 32px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 14px; margin-top: 28px; }
     .choice { display: block; padding: 20px; border: 1px solid rgba(37,35,31,.12); border-radius: 16px; background: rgba(255,255,255,.8); color: inherit; text-decoration: none; box-shadow: 0 8px 24px rgba(59,51,42,.05); }
     .choice:hover { transform: translateY(-1px); box-shadow: 0 12px 30px rgba(59,51,42,.09); }
     .choice strong { display:block; margin-bottom:8px; font-size:16px; }
     .choice span { color:#766f66; font-size:13px; line-height:1.45; }
     .tag { display:inline-block; margin-top:10px; padding:3px 7px; border-radius:999px; background:#eeeae2; color:#70685e; font-size:10px; text-transform:uppercase; letter-spacing:.05em; }
+    @media (max-width: 600px) {
+      .home { margin: 24px auto; padding: 0 14px; }
+      .lead { font-size: 16px; }
+      .grid { margin-top: 20px; }
+      .choice { padding: 16px; }
+    }
   </style>
 </head>
 <body>
   <div class="home">
     <h1>Viable tree renderer candidates.</h1>
-    <p class="lead">The renderer demos now use Anton's real connected MyHeritage genealogy by default (215 people, centered on Anton). Add <code>?sample=1</code> to any renderer URL to switch back to the small synthetic fixture. Every renderer uses the same shared PersonCard component.</p>
+    <p class="lead">The renderer demos use the current MyHeritage snapshot by default (254 individual records and 89 family records, exported 10 Sep 2026, centered on Anton). Add <code>?sample=1</code> to any renderer URL to switch back to the small synthetic fixture. Every renderer uses the same shared PersonCard component.</p>
     <div class="grid">
       <a class="choice" href="./person-card.html">
         <strong>Shared PersonCard</strong>
