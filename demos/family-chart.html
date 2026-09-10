@@ -55,12 +55,12 @@
   </nav>
 </header>
 <main>
-  <p class="demo-note">Family Chart owns the genealogy layout only. Every node is the shared PersonCard. Sex is indicated by the avatar outline; deceased people use a desaturated avatar with a diagonal mourning ribbon. Transition time is zero.</p>
+  <p class="demo-note">Family Chart owns the genealogy layout only. By default this page renders the real MyHeritage snapshot centered on Anton; append <code>?sample=1</code> to return to the synthetic fixture. Every node is the shared PersonCard.</p>
   <div class="canvas-shell"><div id="FamilyChart" class="f3"></div></div>
 </main>
 <script type="module">
   import * as f3 from 'https://esm.sh/family-chart@0.9.0';
-  import { family } from './sample-data.js';
+  import { family } from './demo-data.js';
   import { toFamilyChartData } from './renderer-adapters.js';
   import { personCardElementHtml } from './person-card.js';
 
