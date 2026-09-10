@@ -1,6 +1,6 @@
 export const family = {
   people: [
-    { id: 'P1', name: 'Alex Morgan', years: '1948–2019', sex: 'M', deceased: true },
+    { id: 'P1', name: 'Alex Morgan', years: '1948–2019', sex: 'M', deceased: true, photo: './sample-portrait.svg' },
     { id: 'P2', name: 'Elena Morgan', years: '1950–', sex: 'F' },
     { id: 'P3', name: 'Daniel Morgan', years: '1973–', sex: 'M' },
     { id: 'P4', name: 'Sofia Reed', years: '1975–', sex: 'F' },
