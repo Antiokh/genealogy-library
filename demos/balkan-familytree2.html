@@ -62,7 +62,7 @@
   </nav>
 </header>
 <main>
-  <p class="demo-note">BALKAN FamilyTreeJS 2 using the real MyHeritage snapshot centered on Anton and the same shared PersonCard. Append <code>?sample=1</code> to return to the synthetic fixture. The status badge remains visible for mobile diagnostics.</p>
+  <p class="demo-note">BALKAN FamilyTreeJS 2 using the current MyHeritage snapshot centered on Anton and the same shared PersonCard. Append <code>?sample=1</code> to return to the synthetic fixture. The status badge remains visible for mobile diagnostics.</p>
   <div class="canvas-shell" style="position:relative">
     <div id="BalkanTree"></div>
     <div id="balkanStatus" class="balkan-status">Loading BALKAN FamilyTreeJS 2…</div>
@@ -158,14 +158,14 @@
 
     const separations = customTemplate.separations;
     if (separations) {
-      separations.focusSide = 40;
-      separations.parentSide = 40;
-      separations.parentNeighbor = 40;
-      separations.childSide = 40;
-      separations.childNeighbor = 40;
-      separations.spouseNeighbor = 34;
-      separations.parentLevel = 174;
-      separations.childLevel = 174;
+      separations.focusSide = 34;
+      separations.parentSide = 34;
+      separations.parentNeighbor = 34;
+      separations.childSide = 34;
+      separations.childNeighbor = 34;
+      separations.spouseNeighbor = 30;
+      separations.parentLevel = 148;
+      separations.childLevel = 148;
     }
 
     const tree = new FamilyTree2(document.getElementById('BalkanTree'));
