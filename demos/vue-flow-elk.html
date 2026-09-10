@@ -57,38 +57,14 @@
 
 <script type="module">
   import { family } from './sample-data.js';
+  import { toVueFlowElkData } from './renderer-adapters.js';
   import { personCardElementHtml } from './person-card.js';
 
   const { createApp, ref } = Vue;
   const { VueFlow, Handle, Position } = VueFlowCore;
   const elk = new ELK();
 
-  const rawNodes = [
-    ...family.people.map(person => ({
-      id: person.id,
-      type: 'person',
-      width: 184,
-      height: 72,
-      data: { ...person }
-    })),
-    ...family.families.map(unit => ({
-      id: unit.id,
-      type: 'family',
-      width: 18,
-      height: 18,
-      data: { label: unit.label || '' }
-    }))
-  ];
-
-  const rawEdges = [];
-  for (const unit of family.families) {
-    for (const partner of unit.partners) {
-      rawEdges.push({ id: `${partner}-${unit.id}`, source: partner, target: unit.id });
-    }
-    for (const child of unit.children) {
-      rawEdges.push({ id: `${unit.id}-${child}`, source: unit.id, target: child });
-    }
-  }
+  const { nodes: rawNodes, edges: rawEdges } = toVueFlowElkData(family);
 
   const graph = await elk.layout({
     id: 'root',
