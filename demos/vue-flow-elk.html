@@ -13,10 +13,11 @@
   <style>
     #app, .vue-flow { width: 100%; height: 100%; }
     .vue-flow__node-person, .vue-flow__node-family { border: 0; background: transparent; padding: 0; box-shadow: none; }
-    .vue-flow__node-person { width: 184px; }
+    .vue-flow__node-person { width: 184px; height: 72px; }
     .vue-flow__node-family { width: 18px; height: 18px; }
     .vue-flow__handle { width: 1px !important; height: 1px !important; min-width: 1px; min-height: 1px; opacity: 0; border: 0; }
     .vue-flow__edge-path { stroke: #aaa298; stroke-width: 1.35; }
+    .person-node-wrap { width: 184px; height: 72px; position: relative; }
     .union-wrap { width: 18px; height: 18px; position: relative; display: grid; place-items: center; }
   </style>
 </head>
@@ -25,23 +26,20 @@
   <strong>Tree demo</strong>
   <nav>
     <a href="./index.html">Overview</a>
+    <a href="./person-card.html">Person card</a>
     <a href="./family-chart.html">Family Chart</a>
+    <a href="./jscharting.html">JSCharting</a>
     <a class="active" href="./vue-flow-elk.html">Vue Flow + ELK</a>
-    <a href="./custom-svg.html">Custom SVG</a>
   </nav>
 </header>
 <main>
-  <p class="demo-note">The graph contains explicit family nodes. ELK only calculates positions; Vue Flow owns pan/zoom and lets us render arbitrary HTML cards. The small circle is the union anchor, so children cannot accidentally belong to the wrong spouse.</p>
+  <p class="demo-note">Vue Flow still owns interaction and ELK still owns coordinates, but the person node now contains the exact same shared PersonCard Web Component as the other renderer demos. Only the handles belong to Vue Flow.</p>
   <div class="canvas-shell"><div id="app">
     <vue-flow :nodes="nodes" :edges="edges" :fit-view-on-init="true" :min-zoom="0.25" :max-zoom="2" :nodes-draggable="false">
       <template #node-person="{ data }">
-        <div class="person-card">
+        <div class="person-node-wrap">
           <handle type="target" :position="Position.Top"></handle>
-          <div class="avatar">{{ data.initials }}</div>
-          <div>
-            <div class="name">{{ data.name }}</div>
-            <div class="years">{{ data.years }}</div>
-          </div>
+          <div v-html="personCardElementHtml(data)"></div>
           <handle type="source" :position="Position.Bottom"></handle>
         </div>
       </template>
@@ -59,12 +57,11 @@
 
 <script type="module">
   import { family } from './sample-data.js';
+  import { personCardElementHtml } from './person-card.js';
 
   const { createApp, ref } = Vue;
   const { VueFlow, Handle, Position } = VueFlowCore;
   const elk = new ELK();
-
-  const initials = name => name.split(/\s+/).map(s => s[0]).slice(0, 2).join('');
 
   const rawNodes = [
     ...family.people.map(person => ({
@@ -72,7 +69,7 @@
       type: 'person',
       width: 184,
       height: 72,
-      data: { ...person, initials: initials(person.name) }
+      data: { ...person }
     })),
     ...family.families.map(unit => ({
       id: unit.id,
@@ -117,7 +114,7 @@
 
   createApp({
     components: { VueFlow, Handle },
-    setup() { return { nodes, edges, Position }; }
+    setup() { return { nodes, edges, Position, personCardElementHtml }; }
   }).mount('#app');
 </script>
 </body>
