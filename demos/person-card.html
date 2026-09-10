@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="./demo.css">
   <style>
     .card-preview {
-      max-width: 920px;
+      max-width: 1100px;
       margin: 40px auto;
       display: flex;
       flex-wrap: wrap;
@@ -34,7 +34,7 @@
   </nav>
 </header>
 <main>
-  <p class="demo-note">This is the shared card component. The renderer demos must embed this exact component instead of maintaining separate lookalike card markup.</p>
+  <p class="demo-note">This is the shared card component. Names are intentionally allowed to wrap: compound given names and compound surnames must stay fully visible rather than being ellipsized. The last two cards are stress cases.</p>
   <div class="card-preview" id="cards"></div>
 </main>
 <script type="module">
@@ -43,10 +43,28 @@
 
   const sampleIds = ['P3', 'P4', 'P8', 'P1'];
   const byId = Object.fromEntries(family.people.map(person => [person.id, person]));
-  document.querySelector('#cards').innerHTML = sampleIds.map(id => `
+  const cards = [
+    ...sampleIds.map(id => ({ ...byId[id], label: id })),
+    {
+      id: 'LONG-RU',
+      name: 'Александр-Леонид фон дер Берг-Михайлов',
+      years: '1874–1938',
+      sex: 'M',
+      label: 'compound Cyrillic name'
+    },
+    {
+      id: 'LONG-LATIN',
+      name: 'María de la Cruz Fernández García-Santamaría',
+      years: '1901–1987',
+      sex: 'F',
+      label: 'compound Latin name'
+    }
+  ];
+
+  document.querySelector('#cards').innerHTML = cards.map(person => `
     <figure>
-      ${personCardElementHtml(byId[id])}
-      <figcaption>${id}</figcaption>
+      ${personCardElementHtml(person)}
+      <figcaption>${person.label}</figcaption>
     </figure>`).join('');
 </script>
 </body>
