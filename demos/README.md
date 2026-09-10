@@ -1,12 +1,14 @@
 # Tree visualization demos
 
-These are intentionally disposable comparison demos. They use the same synthetic family wherever the renderer's data model allows it, including:
+These demos are intentionally disposable. The comparison is now filtered by three hard requirements rather than visual appeal alone.
 
-- three grandparent couples;
-- one person with two partners;
-- children assigned to different unions;
-- a single-parent union;
-- one further descendant generation.
+A viable renderer must support, either natively or with a small adapter:
+
+1. branch expand/collapse;
+2. multiple marriages/partnerships with children attached to the correct union;
+3. fully custom person cards that can be treated as reusable UI components.
+
+The shared synthetic family includes remarriage, children from different unions, a single-parent union and another descendant generation.
 
 Run from the repository root:
 
@@ -22,109 +24,76 @@ http://localhost:8000/demos/
 
 The demos load third-party libraries from public CDNs, so they need an internet connection.
 
-## What each demo is testing
+## Remaining candidates
 
 ### Family Chart
 
-Tests how far the genealogy-specific library gets us with card/CSS customization.
+Repository: `donatso/family-chart`.
 
-Strength: low implementation effort and genealogy-specific interaction/layout.
+Why it remains:
 
-Risk: its canonical input is person-centric (`parents`, `spouses`, `children`). That loses the explicit `family -> children` association and is exactly where multi-spouse layouts become ambiguous.
+- genealogy-specific;
+- built-in tree interaction and branch expansion;
+- customizable HTML cards;
+- MIT licensed.
 
-The comparison version sets transition time to `0` so perceived slowness can be separated from animation cost.
+Blocking question: its current multi-spouse layout can place children under the wrong couple. It remains viable only if that behavior can be corrected without replacing the layout engine.
 
-### ApexTree
-
-Tests a lightweight, polished SVG hierarchy renderer with good expand/collapse, zoom/pan, search, and custom HTML node templates.
-
-Strength: small visual/runtime surface and attractive defaults.
-
-Risk: input is a strict nested tree (`node.children[]`). There is no native multi-parent or partnership relationship. The demo therefore inserts a partnership node below Daniel and puts the spouse and children below that node. This is a visual/data projection compromise, not true genealogy semantics.
-
-Licensing is not a conventional permissive OSS license: current ApexTree/ApexCharts releases use a community/commercial licensing model.
-
-### treeSpider
-
-Tests another visually light hierarchy renderer.
-
-Strength: MIT license, TypeScript/D3 implementation, several layout styles, zoom and collapse/expand behavior.
-
-Risk: the source data model is linear `id + parentId`, so it has the same fundamental marriage problem as any org chart. The demo intentionally exposes that by representing each partnership as a hierarchy node.
-
-### d3-org-chart
-
-Repository: `bumbeishvili/org-chart` / npm `d3-org-chart`.
-
-This is more interesting than a generic D3 baseline because it already supplies most tree interaction we would otherwise have to rebuild: flextree layout, zoom/pan, fit/center, expand/collapse, search/highlight, multiple layouts and arbitrary HTML node content.
-
-Strengths:
-
-- MIT licensed;
-- no Vue/React dependency;
-- custom HTML cards are first-class via `nodeContent`;
-- animation duration can be set to zero;
-- arbitrary extra `connections` can be drawn between nodes;
-- the implementation is essentially one configurable chart class over D3/flextree, making it comparatively approachable to adapt or fork.
-
-Risk: the structural hierarchy still gives each node one `parentId`. Extra `connections` are rendered links, not layout parents. The demo therefore makes an explicit union node the structural child of one partner and uses an extra connection from the second partner. Children descend from the union correctly, but the spouse connection does not participate in automatic layout. This is the exact geometry question to evaluate visually.
+The comparison demo disables transition animation so rendering/layout cost can be judged separately from animation latency.
 
 ### JSCharting Org
 
-Tests whether a polished organizational renderer with native multiple-parent support can map cleanly to our generated `people + families` graph.
+Why it remains:
 
-Strength: a point can have multiple parents, so a generated family/union point can have both partners as parents and the children can descend from the union. That preserves the correct marriage-to-child association without duplicating people.
+- organizational layout supports multiple parents;
+- an explicit generated union node can therefore have both partners as parents;
+- children can structurally descend from that union rather than from only one spouse;
+- node appearance is highly customizable;
+- hierarchy interaction/collapse is available.
 
-Risk: commercial/proprietary dependency. It is therefore interesting technically and visually, but is a weaker strategic dependency for an independence-oriented open project.
-
-### DHTMLX Diagram
-
-Tests DHTMLX org-chart partner support and its polished interaction model.
-
-Strength: native horizontal partner items, expand/collapse, zoom, custom HTML shapes, and an optional full visual editor.
-
-Risk: DHTMLX documents that partner items cannot themselves be parent items. That means its native org-chart relationship model cannot naturally say "these children belong to this specific partnership" when one person has multiple partners. The demo shows this limitation directly.
-
-The 2026 GPL edition can be used in GPL-compatible open-source projects; broader proprietary/commercial use requires a commercial license.
+Risk: proprietary/commercial dependency and a less component-native rendering model than Vue.
 
 ### Vue Flow + ELK
 
-Tests the opposite approach: explicit `family` nodes in our graph, ELK for coordinates, Vue Flow only for rendering/interactions.
+Why it remains:
 
-Strength: the graph semantics stay correct and the UI can be fully custom.
+- explicit person + union graph preserves genealogy semantics exactly;
+- person cards can be real Vue components;
+- arbitrary interaction/edit affordances are possible;
+- zoom/pan are already solved.
 
-Risk: two libraries and substantially more code. We also have to own genealogy-specific layout tuning.
+Risk: branch collapse, genealogy-specific layout rules and much of the behavior become our responsibility. It is the flexible fallback, not the preferred answer by default.
 
 ### Custom SVG
 
-Tests the lower bound of implementation weight and the desired visual language.
+This is not a third-party renderer candidate. It stays only as a baseline showing how small the visible rendering layer can be if we eventually own layout/collapse ourselves.
 
-Strength: virtually unlimited design control and very small runtime.
+## Rejected from active evaluation
 
-Risk: this demo uses hand-authored positions. A production version would still need a real layout algorithm. Its purpose is to answer whether a custom renderer is visually attractive enough to justify owning the layout layer.
+The following demos were removed because their structural model cannot satisfy child-per-union semantics cleanly enough for the product:
 
-## Current comparison questions
+- **ApexTree** — strict nested `children[]` hierarchy; one structural parent path;
+- **treeSpider** — strict `id + parentId` hierarchy; additionally the demo did not load reliably in testing;
+- **d3-org-chart** — one structural `parentId`; secondary connections do not participate in layout;
+- **DHTMLX Diagram org chart** — partner nodes cannot themselves be parent nodes, so children cannot naturally belong to a specific partnership.
 
-The important distinction is not simply "which demo looks nicest".
+These projects may still be useful visual references, but they are no longer implementation candidates.
 
-A renderer may be useful in one of three roles:
+## Next candidate to test
 
-1. **genealogy renderer** — understands partnerships/multiple parents well enough to lay them out directly;
-2. **tree renderer** — visually strong, but requires our build step to project genealogy into a simpler hierarchy;
-3. **presentation layer** — renders coordinates/interactions while we own genealogy layout ourselves.
-
-ApexTree, treeSpider and d3-org-chart are category 2. d3-org-chart is the most flexible of those three because it exposes HTML node rendering and arbitrary secondary connections without a framework. JSCharting is the most interesting candidate for category 1 because of native multiple-parent links. Vue Flow and custom SVG represent category 3.
+**BALKAN FamilyTreeJS 2** should be added as a focused comparison because it explicitly supports multiple partners, genealogy-oriented family relationships, expand/collapse and customizable node templates. Its main downside is commercial licensing.
 
 ## Decision criterion
 
-Do not choose based on the synthetic sample alone. The winner should later be tested with the real imported genealogy, especially:
+The winner must be tested on the real genealogy, especially:
 
-1. multiple marriages with children from each union;
-2. half-siblings;
-3. missing/unknown parent;
-4. spouse ancestry;
-5. pedigree collapse;
-6. wide collateral branches;
-7. roughly 250 people and mobile interaction;
-8. initial load and interaction latency with animations disabled;
-9. the amount of custom card/layout code required to reach the intended visual quality.
+- multiple marriages with children from each union;
+- half-siblings;
+- missing/unknown parent;
+- spouse ancestry;
+- pedigree collapse;
+- wide collateral branches;
+- roughly 250 people;
+- mobile interaction;
+- initial load and expand/collapse latency;
+- the amount of custom code required to make a finished person card.
