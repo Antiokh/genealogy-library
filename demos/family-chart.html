@@ -9,9 +9,38 @@
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
   <style>
     #FamilyChart { width: 100%; height: 100%; }
-    #FamilyChart .card_cont { overflow: visible; }
-    #FamilyChart .card-inner { width: 184px; height: 72px; }
+    #FamilyChart .card_cont { overflow: visible; filter: none !important; }
     #FamilyChart path.link { stroke: #aaa298; stroke-width: 1.35px; }
+
+    /* Family Chart owns layout and hit targets only. Its legacy card skin must
+       not remain visible behind the shared GenealogyPersonCard component. */
+    #FamilyChart div.card,
+    #FamilyChart div.card.card-male,
+    #FamilyChart div.card.card-female,
+    #FamilyChart div.card.card-genderless,
+    #FamilyChart div.card-inner,
+    #FamilyChart .genealogy-card-host {
+      width: 184px !important;
+      height: 72px !important;
+      min-height: 72px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      outline: 0 !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      box-shadow: none !important;
+      filter: none !important;
+      color: inherit !important;
+    }
+    #FamilyChart div.card::before,
+    #FamilyChart div.card::after,
+    #FamilyChart div.card-inner::before,
+    #FamilyChart div.card-inner::after {
+      display: none !important;
+      content: none !important;
+    }
   </style>
 </head>
 <body>
@@ -21,12 +50,12 @@
     <a href="./index.html">Overview</a>
     <a href="./person-card.html">Person card</a>
     <a class="active" href="./family-chart.html">Family Chart</a>
-    <a href="./jscharting.html">JSCharting</a>
+    <a href="./balkan-familytree2.html">BALKAN FamilyTreeJS 2</a>
     <a href="./vue-flow-elk.html">Vue Flow + ELK</a>
   </nav>
 </header>
 <main>
-  <p class="demo-note">Family Chart with its genealogy layout, but the person node is now the exact shared PersonCard component used by the other renderer demos. Transition time is zero so layout/render cost is not hidden by animation.</p>
+  <p class="demo-note">Family Chart with its genealogy layout, but the person node is the exact shared PersonCard component. The library's own card backgrounds, borders and shadows are explicitly neutralized so only the shared component remains visible. Transition time is zero.</p>
   <div class="canvas-shell"><div id="FamilyChart" class="f3"></div></div>
 </main>
 <script type="module">
@@ -73,7 +102,7 @@
     .setCardInnerHtmlCreator(d => {
       const p = d.data.data;
       const name = [p['first name'], p['last name']].filter(Boolean).join(' ');
-      return `<div class="card-inner">${personCardElementHtml({
+      return `<div class="card-inner genealogy-card-host">${personCardElementHtml({
         id: d.data.id,
         name,
         years: p.years || ''
