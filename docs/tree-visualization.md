@@ -113,6 +113,38 @@ so it has the same structural genealogy limitation as ApexTree. It can be a good
 
 Keep it in the visual comparison because its design/runtime tradeoff may still be attractive enough to justify a specialized genealogy projection.
 
+## d3-org-chart
+
+Repository: `bumbeishvili/org-chart`; npm package: `d3-org-chart`.
+
+This is a stronger candidate than a bare D3 implementation because it already provides most interaction and layout behavior we would otherwise have to build: flextree layout, zoom/pan, fit/center, expand/collapse, search/highlight, multiple orientations/layouts, custom HTML nodes and arbitrary additional connections.
+
+Strengths:
+
+- MIT licensed;
+- no Vue/React runtime dependency;
+- `nodeContent` allows fully custom HTML cards;
+- animation duration is configurable and can be disabled;
+- arbitrary secondary `connections` can represent spouse/cross-family links;
+- implementation is concentrated in a configurable chart class over D3/flextree, so adaptation/forking is more approachable than a large graph framework;
+- built-in interaction surface is substantially richer than the very lightweight hierarchy renderers.
+
+The structural limitation remains important: the hierarchy itself is still `id + parentId`. Secondary `connections` are rendered links, not additional layout parents.
+
+For genealogy, one possible projection is:
+
+```text
+P1
+ |
+ F1 ───── P2   <- secondary connection
+ |
+ children
+```
+
+The children remain structurally attached to `F1`, so their union identity is preserved, but only one partner participates in flextree layout. Whether this can still produce convincing marriage geometry with modest post-layout tuning is the key question for the demo.
+
+This makes d3-org-chart particularly interesting as a middle ground between ApexTree/treeSpider and Vue Flow + ELK: more interaction and customization than the former, much less framework machinery than the latter.
+
 ## JSCharting Org
 
 JSCharting is proprietary/commercial, but technically it is the most interesting new org-chart candidate because it supports multiple parents natively.
@@ -224,6 +256,7 @@ The practical shortlist should now be judged on these dimensions:
 | Family Chart | good | genealogy-specific but multi-spouse issue | medium | yes | MIT |
 | ApexTree | very good | hierarchy only | very good | yes | community/commercial |
 | treeSpider | good | hierarchy only | good | limited/moderate | MIT |
+| d3-org-chart | good/very good | one parent + secondary connections | good | excellent | MIT |
 | JSCharting Org | very good | multiple parents; union-node projection works | good | yes | commercial |
 | DHTMLX Diagram | very good | partner UI but weak child-per-union semantics | medium | yes | GPL-2 / commercial |
 | Vue Flow + ELK | entirely ours | excellent | weak/medium | entirely ours | MIT |
