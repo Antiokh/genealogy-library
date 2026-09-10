@@ -65,9 +65,12 @@ export class GenealogyPersonCard extends HTMLElement {
     const birthSurname = this.getAttribute('birth-surname') || '';
     const showBirthSurname = shouldShowBirthSurname(name, birthSurname);
 
-    const avatarContent = photo
-      ? `<img class="avatar-photo" src="${esc(photo)}" alt="" draggable="false">`
-      : `<span class="avatar-initials">${esc(initials(name))}</span>`;
+    // Initials are always rendered underneath the optional photo. This makes
+    // expired/private/temporarily unavailable media URLs degrade cleanly
+    // without ever exposing a browser broken-image icon.
+    const avatarContent = `
+      <span class="avatar-initials">${esc(initials(name))}</span>
+      ${photo ? `<img class="avatar-photo" src="${esc(photo)}" alt="" draggable="false">` : ''}`;
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -112,21 +115,25 @@ export class GenealogyPersonCard extends HTMLElement {
         .avatar.male { --avatar-accent: #7899ad; }
         .avatar.female { --avatar-accent: #c48691; }
         .avatar.unknown { --avatar-accent: #aaa49b; }
-        .avatar-photo {
-          position: relative;
-          z-index: 1;
-          width: 47px;
-          height: 47px;
-          display: block;
-          border-radius: 50%;
-          object-fit: cover;
-          user-select: none;
-          -webkit-user-drag: none;
-        }
         .avatar-initials {
           position: relative;
           z-index: 1;
         }
+        .avatar-photo {
+          position: absolute;
+          z-index: 2;
+          inset: 1px;
+          width: 46px;
+          height: 46px;
+          display: block;
+          border-radius: 50%;
+          object-fit: cover;
+          opacity: 0;
+          transition: opacity .12s ease-out;
+          user-select: none;
+          -webkit-user-drag: none;
+        }
+        .avatar-photo.loaded { opacity: 1; }
         .avatar.deceased .avatar-photo {
           filter: grayscale(1);
         }
@@ -137,7 +144,7 @@ export class GenealogyPersonCard extends HTMLElement {
         .avatar.deceased::after {
           content: '';
           position: absolute;
-          z-index: 2;
+          z-index: 3;
           right: -8px;
           bottom: 9px;
           width: 41px;
@@ -150,7 +157,7 @@ export class GenealogyPersonCard extends HTMLElement {
         .avatar::before {
           content: '';
           position: absolute;
-          z-index: 3;
+          z-index: 4;
           inset: 0;
           border: 2px solid var(--avatar-accent);
           border-radius: 50%;
@@ -158,7 +165,7 @@ export class GenealogyPersonCard extends HTMLElement {
         }
         .avatar-shield {
           position: absolute;
-          z-index: 4;
+          z-index: 5;
           inset: 0;
           border-radius: 50%;
           background: transparent;
@@ -209,6 +216,21 @@ export class GenealogyPersonCard extends HTMLElement {
           <div class="years">${esc(years)}</div>
         </div>
       </article>`;
+
+    const image = this.shadowRoot.querySelector('.avatar-photo');
+    if (image) {
+      const showPhoto = () => image.classList.add('loaded');
+      const useFallback = () => image.remove();
+
+      image.addEventListener('load', showPhoto, { once: true });
+      image.addEventListener('error', useFallback, { once: true });
+
+      // Cached images may already be complete before listeners are attached.
+      if (image.complete) {
+        if (image.naturalWidth > 0) showPhoto();
+        else useFallback();
+      }
+    }
   }
 }
 
