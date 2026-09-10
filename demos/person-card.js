@@ -50,7 +50,7 @@ export class GenealogyPersonCard extends HTMLElement {
     const photo = this.getAttribute('photo') || '';
 
     const avatarContent = photo
-      ? `<img class="avatar-photo" src="${esc(photo)}" alt="">`
+      ? `<img class="avatar-photo" src="${esc(photo)}" alt="" draggable="false">`
       : `<span class="avatar-initials">${esc(initials(name))}</span>`;
 
     this.shadowRoot.innerHTML = `
@@ -99,11 +99,13 @@ export class GenealogyPersonCard extends HTMLElement {
         .avatar-photo {
           position: relative;
           z-index: 1;
-          width: 40px;
-          height: 40px;
+          width: 41px;
+          height: 41px;
           display: block;
           border-radius: 50%;
           object-fit: cover;
+          user-select: none;
+          -webkit-user-drag: none;
         }
         .avatar-initials {
           position: relative;
@@ -138,6 +140,15 @@ export class GenealogyPersonCard extends HTMLElement {
           border-radius: 50%;
           pointer-events: none;
         }
+        .avatar-shield {
+          position: absolute;
+          z-index: 4;
+          inset: 0;
+          border-radius: 50%;
+          background: transparent;
+          user-select: none;
+          -webkit-user-select: none;
+        }
         .text { min-width: 0; }
         .name {
           overflow: hidden;
@@ -160,6 +171,7 @@ export class GenealogyPersonCard extends HTMLElement {
       <article class="card" data-person-id="${esc(personId)}">
         <div class="avatar ${sex}${deceased ? ' deceased' : ''}" aria-hidden="true">
           ${avatarContent}
+          <span class="avatar-shield"></span>
         </div>
         <div class="text">
           <div class="name">${esc(name)}</div>
