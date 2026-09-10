@@ -8,7 +8,9 @@ A viable renderer must support, either natively or with a small adapter:
 2. multiple marriages/partnerships with children attached to the correct union;
 3. a fully custom person card that can be treated as a reusable UI component.
 
-The shared synthetic family includes remarriage, children from different unions, a single-parent union and another descendant generation.
+By default the renderer demos use a transformed fixture derived from the current MyHeritage export (10 Sep 2026): 254 individual records and 89 family records, centered on Anton. The raw GEDCOM is not stored in this public repository. Only fields needed for renderer testing are kept in the demo fixture: display/name variants, years, sex, deceased status, photo reference and family relationships.
+
+Append `?sample=1` to a renderer URL to use the small synthetic fixture instead. It includes remarriage, children from different unions, a single-parent union and another descendant generation.
 
 Run from the repository root:
 
@@ -22,7 +24,7 @@ Then open:
 http://localhost:8000/demos/
 ```
 
-The demos load third-party libraries from public CDNs, so they need an internet connection.
+The demos load third-party libraries and optional photo references from public CDNs/URLs, so they need an internet connection. The shared PersonCard must remain usable when a remote photo is unavailable.
 
 ## Shared PersonCard
 
@@ -30,7 +32,9 @@ The demos load third-party libraries from public CDNs, so they need an internet 
 
 It defines the `genealogy-person-card` Web Component and a small `personCardElementHtml()` adapter. The same component must be embedded by every renderer demo. A library is not allowed to keep a visually similar but renderer-specific card just to stay in the comparison.
 
-Open `person-card.html` to inspect the component independently from any tree renderer.
+The card supports multiline compound names, a separate surname-at-birth line and a photo-to-initials fallback. Remote photos are hidden until they load successfully; a failed image is removed so the initials avatar remains visible without a broken-image icon.
+
+Open `person-card.html` to inspect the component independently from any tree renderer. It includes explicit long-name, surname-at-birth and broken-photo stress cases.
 
 This gives us a practical hard test:
 
@@ -66,7 +70,7 @@ Why it is a primary candidate:
 - the v2 template API accepts arbitrary HTML, so the shared PersonCard Web Component can be returned directly from `template.html`;
 - node size, HTML, SVG background and relationship-specific templates are customizable.
 
-The demo maps the same synthetic source data into FamilyTreeJS 2 records and uses the exact shared PersonCard. It also exposes simple collapse/expand buttons to exercise collapse state directly.
+The demo maps the same source data into FamilyTreeJS 2 records and uses the exact shared PersonCard. It also exposes simple collapse/expand buttons to exercise collapse state directly.
 
 Risk: commercial/proprietary dependency. Runtime feel, visual geometry and licensing must justify using it as a core renderer.
 
