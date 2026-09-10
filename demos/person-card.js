@@ -16,9 +16,16 @@ const initials = name => String(name || '?')
   .slice(0, 2)
   .join('') || '?';
 
+const normalizeSex = value => {
+  const sex = String(value || '').toUpperCase();
+  if (sex === 'M' || sex === 'MALE') return 'male';
+  if (sex === 'F' || sex === 'FEMALE') return 'female';
+  return 'unknown';
+};
+
 export class GenealogyPersonCard extends HTMLElement {
   static get observedAttributes() {
-    return ['person-id', 'name', 'years'];
+    return ['person-id', 'name', 'years', 'sex', 'deceased', 'photo'];
   }
 
   constructor() {
@@ -38,6 +45,13 @@ export class GenealogyPersonCard extends HTMLElement {
     const name = this.getAttribute('name') || 'Unknown person';
     const years = this.getAttribute('years') || '';
     const personId = this.getAttribute('person-id') || '';
+    const sex = normalizeSex(this.getAttribute('sex'));
+    const deceased = this.hasAttribute('deceased');
+    const photo = this.getAttribute('photo') || '';
+
+    const avatarContent = photo
+      ? `<img class="avatar-photo" src="${esc(photo)}" alt="">`
+      : `<span class="avatar-initials">${esc(initials(name))}</span>`;
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -60,21 +74,54 @@ export class GenealogyPersonCard extends HTMLElement {
           border-radius: 14px;
           border: 1px solid rgba(49,45,39,.13);
           background: rgba(255,255,255,.98);
-          box-shadow: 0 4px 14px rgba(48,42,34,.09);
+          box-shadow: 0 2px 8px rgba(48,42,34,.07);
           text-align: left;
         }
         .avatar {
+          --avatar-accent: #aaa49b;
+          position: relative;
           width: 44px;
           height: 44px;
           display: grid;
           place-items: center;
+          overflow: hidden;
           border-radius: 50%;
+          border: 2px solid var(--avatar-accent);
           background: #eeebe4;
           color: #59534a;
           font-size: 12px;
           font-weight: 700;
           letter-spacing: .02em;
           user-select: none;
+        }
+        .avatar.male { --avatar-accent: #7899ad; }
+        .avatar.female { --avatar-accent: #c48691; }
+        .avatar.unknown { --avatar-accent: #aaa49b; }
+        .avatar-photo {
+          width: 100%;
+          height: 100%;
+          display: block;
+          object-fit: cover;
+        }
+        .avatar.deceased .avatar-photo {
+          filter: grayscale(1);
+        }
+        .avatar.deceased .avatar-initials {
+          filter: grayscale(1);
+          opacity: .72;
+        }
+        .avatar.deceased::after {
+          content: '';
+          position: absolute;
+          z-index: 2;
+          left: -10px;
+          top: 18px;
+          width: 64px;
+          height: 7px;
+          background: rgba(10,10,10,.96);
+          transform: rotate(-38deg);
+          transform-origin: center;
+          pointer-events: none;
         }
         .text { min-width: 0; }
         .name {
@@ -96,7 +143,9 @@ export class GenealogyPersonCard extends HTMLElement {
         }
       </style>
       <article class="card" data-person-id="${esc(personId)}">
-        <div class="avatar" aria-hidden="true">${esc(initials(name))}</div>
+        <div class="avatar ${sex}${deceased ? ' deceased' : ''}" aria-hidden="true">
+          ${avatarContent}
+        </div>
         <div class="text">
           <div class="name">${esc(name)}</div>
           <div class="years">${esc(years)}</div>
@@ -110,10 +159,14 @@ if (!customElements.get('genealogy-person-card')) {
 }
 
 export function personCardElementHtml(person) {
+  const deceasedAttribute = person.deceased ? '\n    deceased' : '';
+  const photoAttribute = person.photo ? `\n    photo="${esc(person.photo)}"` : '';
+
   return `<genealogy-person-card
     style="display:block;width:${PERSON_CARD_WIDTH}px;height:${PERSON_CARD_HEIGHT}px"
     person-id="${esc(person.id || '')}"
     name="${esc(person.name || 'Unknown person')}"
     years="${esc(person.years || '')}"
+    sex="${esc(person.sex || '')}"${deceasedAttribute}${photoAttribute}
   ></genealogy-person-card>`;
 }
