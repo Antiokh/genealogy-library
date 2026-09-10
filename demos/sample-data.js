@@ -1,4 +1,5 @@
 export const family = {
+  root: 'P3',
   people: [
     { id: 'P1', name: 'Alex Morgan', years: '1948–2019', sex: 'M', deceased: true, photo: './sample-portrait.svg' },
     { id: 'P2', name: 'Elena Morgan', years: '1950–', sex: 'F' },
