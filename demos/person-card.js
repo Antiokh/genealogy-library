@@ -98,9 +98,10 @@ export class GenealogyPersonCard extends HTMLElement {
         .avatar.female { --avatar-accent: #c48691; }
         .avatar.unknown { --avatar-accent: #aaa49b; }
         .avatar-photo {
-          width: 100%;
-          height: 100%;
+          width: 36px;
+          height: 36px;
           display: block;
+          border-radius: 50%;
           object-fit: cover;
         }
         .avatar.deceased .avatar-photo {
@@ -114,12 +115,12 @@ export class GenealogyPersonCard extends HTMLElement {
           content: '';
           position: absolute;
           z-index: 2;
-          left: -10px;
-          top: 18px;
-          width: 64px;
-          height: 7px;
+          right: -7px;
+          bottom: 5px;
+          width: 30px;
+          height: 5px;
           background: rgba(10,10,10,.96);
-          transform: rotate(-38deg);
+          transform: rotate(-42deg);
           transform-origin: center;
           pointer-events: none;
         }
