@@ -52,6 +52,23 @@ Strength: MIT license, TypeScript/D3 implementation, several layout styles, zoom
 
 Risk: the source data model is linear `id + parentId`, so it has the same fundamental marriage problem as any org chart. The demo intentionally exposes that by representing each partnership as a hierarchy node.
 
+### d3-org-chart
+
+Repository: `bumbeishvili/org-chart` / npm `d3-org-chart`.
+
+This is more interesting than a generic D3 baseline because it already supplies most tree interaction we would otherwise have to rebuild: flextree layout, zoom/pan, fit/center, expand/collapse, search/highlight, multiple layouts and arbitrary HTML node content.
+
+Strengths:
+
+- MIT licensed;
+- no Vue/React dependency;
+- custom HTML cards are first-class via `nodeContent`;
+- animation duration can be set to zero;
+- arbitrary extra `connections` can be drawn between nodes;
+- the implementation is essentially one configurable chart class over D3/flextree, making it comparatively approachable to adapt or fork.
+
+Risk: the structural hierarchy still gives each node one `parentId`. Extra `connections` are rendered links, not layout parents. The demo therefore makes an explicit union node the structural child of one partner and uses an extra connection from the second partner. Children descend from the union correctly, but the spouse connection does not participate in automatic layout. This is the exact geometry question to evaluate visually.
+
 ### JSCharting Org
 
 Tests whether a polished organizational renderer with native multiple-parent support can map cleanly to our generated `people + families` graph.
@@ -96,7 +113,7 @@ A renderer may be useful in one of three roles:
 2. **tree renderer** — visually strong, but requires our build step to project genealogy into a simpler hierarchy;
 3. **presentation layer** — renders coordinates/interactions while we own genealogy layout ourselves.
 
-ApexTree and treeSpider currently look strongest in category 2. JSCharting is the most interesting new candidate for category 1 because of native multiple-parent links. Vue Flow and custom SVG represent category 3.
+ApexTree, treeSpider and d3-org-chart are category 2. d3-org-chart is the most flexible of those three because it exposes HTML node rendering and arbitrary secondary connections without a framework. JSCharting is the most interesting candidate for category 1 because of native multiple-parent links. Vue Flow and custom SVG represent category 3.
 
 ## Decision criterion
 
