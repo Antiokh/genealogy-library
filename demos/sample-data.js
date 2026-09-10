@@ -1,6 +1,6 @@
 export const family = {
   people: [
-    { id: 'P1', name: 'Alex Morgan', years: '1948–2019', sex: 'M' },
+    { id: 'P1', name: 'Alex Morgan', years: '1948–2019', sex: 'M', deceased: true },
     { id: 'P2', name: 'Elena Morgan', years: '1950–', sex: 'F' },
     { id: 'P3', name: 'Daniel Morgan', years: '1973–', sex: 'M' },
     { id: 'P4', name: 'Sofia Reed', years: '1975–', sex: 'F' },
@@ -8,7 +8,7 @@ export const family = {
     { id: 'P6', name: 'Nina Morgan', years: '2001–', sex: 'F' },
     { id: 'P7', name: 'Leo Morgan', years: '2004–', sex: 'M' },
     { id: 'P8', name: 'Eva Morgan', years: '2012–', sex: 'F' },
-    { id: 'P9', name: 'Owen Reed', years: '1949–2020', sex: 'M' },
+    { id: 'P9', name: 'Owen Reed', years: '1949–2020', sex: 'M', deceased: true },
     { id: 'P10', name: 'Clara Reed', years: '1952–', sex: 'F' },
     { id: 'P11', name: 'Mark Bell', years: '1951–', sex: 'M' },
     { id: 'P12', name: 'Irene Bell', years: '1954–', sex: 'F' },
