@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shared person card</title>
+  <link rel="stylesheet" href="./demo.css">
+  <style>
+    .card-preview {
+      max-width: 920px;
+      margin: 40px auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .card-preview figure { margin: 0; }
+    .card-preview figcaption {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #827b71;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <strong>Tree demo</strong>
+  <nav>
+    <a href="./index.html">Overview</a>
+    <a class="active" href="./person-card.html">Person card</a>
+    <a href="./family-chart.html">Family Chart</a>
+    <a href="./jscharting.html">JSCharting</a>
+    <a href="./vue-flow-elk.html">Vue Flow + ELK</a>
+  </nav>
+</header>
+<main>
+  <p class="demo-note">This is the shared card component. The renderer demos must embed this exact component instead of maintaining separate lookalike card markup.</p>
+  <div class="card-preview" id="cards"></div>
+</main>
+<script type="module">
+  import { family } from './sample-data.js';
+  import { personCardElementHtml } from './person-card.js';
+
+  const sampleIds = ['P3', 'P4', 'P8', 'P1'];
+  const byId = Object.fromEntries(family.people.map(person => [person.id, person]));
+  document.querySelector('#cards').innerHTML = sampleIds.map(id => `
+    <figure>
+      ${personCardElementHtml(byId[id])}
+      <figcaption>${id}</figcaption>
+    </figure>`).join('');
+</script>
+</body>
+</html>
