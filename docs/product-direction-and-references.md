@@ -142,6 +142,8 @@ Differences from our direction:
 
 The project should be installed in a test Obsidian vault and exercised with the same GEDCOM fixtures used by Genealogy Library. This is likely more informative than reading code alone.
 
+Because Charted Roots is close to our Markdown-first model, it should also be treated as an optional research/editing client with an explicit migration/compatibility contract rather than only as a code reference. See [`charted-roots-migration-contract.md`](./charted-roots-migration-contract.md).
+
 ### 2. Gramps / Gramps Web
 
 Repositories include `gramps-project/gramps-web` and the wider Gramps ecosystem.
@@ -210,6 +212,7 @@ Gramps
 
 Charted Roots
   -> Markdown/YAML representation, import UX, merge/duplicate ideas, graph construction
+  -> optional research/editing client via explicit migration adapters
 
 GEDKeeper
   -> GEDCOM implementation and edge cases
