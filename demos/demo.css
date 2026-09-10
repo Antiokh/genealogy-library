@@ -1,0 +1,127 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f4f2ed;
+  color: #25231f;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255,255,255,.9), transparent 38rem),
+    #f4f2ed;
+}
+header {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  padding: 16px 22px;
+  border-bottom: 1px solid rgba(37,35,31,.12);
+  background: rgba(250,249,246,.9);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+header strong { font-size: 15px; }
+header nav { display: flex; gap: 10px; flex-wrap: wrap; }
+header a {
+  color: #5f5a51;
+  text-decoration: none;
+  font-size: 13px;
+  padding: 6px 9px;
+  border-radius: 8px;
+}
+header a:hover, header a.active { background: #e9e5dc; color: #24211d; }
+main { padding: 18px; }
+.demo-note {
+  max-width: 920px;
+  margin: 0 auto 14px;
+  color: #666057;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.canvas-shell {
+  height: calc(100vh - 122px);
+  min-height: 620px;
+  border: 1px solid rgba(37,35,31,.12);
+  border-radius: 16px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle, rgba(55,51,45,.09) 1px, transparent 1px) 0 0/18px 18px,
+    #fbfaf7;
+  box-shadow: 0 14px 40px rgba(59,51,42,.08);
+}
+.person-card {
+  width: 184px;
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 11px;
+  align-items: center;
+  padding: 11px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(49,45,39,.13);
+  background: rgba(255,255,255,.97);
+  box-shadow: 0 4px 14px rgba(48,42,34,.09);
+  text-align: left;
+}
+.person-card .avatar {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #eeebe4;
+  color: #59534a;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+.person-card .name {
+  font-size: 14px;
+  line-height: 1.25;
+  font-weight: 650;
+  color: #26231f;
+}
+.person-card .years {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #827b71;
+}
+.union-dot {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #8d8579;
+  background: #fbfaf7;
+  border-radius: 50%;
+}
+.union-label {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  color: #8b8378;
+  font-size: 10px;
+}
+.toolbar {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 10;
+  display: flex;
+  gap: 7px;
+}
+.toolbar button {
+  border: 1px solid rgba(49,45,39,.16);
+  background: rgba(255,255,255,.94);
+  border-radius: 9px;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+@media (max-width: 700px) {
+  main { padding: 10px; }
+  header { padding: 12px; }
+  .canvas-shell { height: calc(100vh - 135px); min-height: 520px; }
+}
