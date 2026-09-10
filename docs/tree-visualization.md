@@ -47,7 +47,7 @@ demos/person-card.js
         ↓
 genealogy-person-card
         ├── Family Chart
-        ├── JSCharting
+        ├── BALKAN FamilyTreeJS 2
         ├── Vue Flow + ELK
         └── standalone person-card.html
 ```
@@ -78,25 +78,27 @@ Blocking issue:
 
 Its current multi-spouse layout can place children under the wrong couple. This is a correctness problem, not a cosmetic issue. Family Chart remains a candidate only if the layout can be fixed or adapted without replacing most of the engine.
 
-The current demo disables transition animations to separate perceived animation latency from actual layout/render cost.
+The current demo disables transition animations and neutralizes the library's own card background/border/shadow so only the shared PersonCard should remain visible.
 
-### JSCharting Org
+### BALKAN FamilyTreeJS 2
+
+This is now a primary candidate rather than a future test.
 
 Why it remains:
 
-- supports multiple parents in organizational layouts;
-- explicit generated union nodes can therefore have both partners as parents;
-- children can descend structurally from the correct union;
-- expand/collapse and hierarchy interaction are available;
-- no application framework is required.
+- genealogy-specific rather than a generic org-chart projection;
+- native spouse relationships (`spouseIds`);
+- parent/child relationships are explicit, including mother/father pairs and child lists;
+- multiple spouses are supported directly;
+- children can be attached to the actual parent pair, so remarriage does not require duplicating people or inserting fake hierarchy nodes;
+- collapse state is part of the public API through `collapsedIds`, with genealogy-oriented collapse/expand behavior;
+- templates support arbitrary HTML via `template.html`;
+- template width/height, SVG background and relationship-specific node templates are customizable;
+- the exact shared `genealogy-person-card` Web Component can therefore be hosted inside a BALKAN node instead of imitated.
 
-Blocking component test:
+The demo uses the same synthetic family as the other renderers, including Daniel's two spouses and children from different unions. It also exposes explicit collapse/expand buttons to exercise the collapse API directly.
 
-The demo now embeds the exact `genealogy-person-card` through the HTML annotation/label layer rather than maintaining a JSCharting-specific lookalike. If the browser test shows that JSCharting cannot render or measure the component reliably, it fails hard requirement 3 and should be removed from the shortlist.
-
-Other risk: proprietary/commercial dependency.
-
-This is currently the strongest generic renderer from a relationship-layout perspective, provided it passes the shared-component test.
+Primary risk: proprietary/commercial licensing. It should win only if its genealogy layout, interaction quality and implementation savings justify that dependency.
 
 ### Vue Flow + ELK
 
@@ -119,14 +121,6 @@ Risks:
 
 This is the correctness/control fallback, not the automatic first choice.
 
-### BALKAN FamilyTreeJS 2 — next focused test
-
-This is the next serious candidate to demo because it is genealogy-specific and explicitly supports multiple partners, family relationships, expand/collapse and customizable templates.
-
-Its main strategic downside is commercial licensing. If its interaction and layout save enough implementation work, that may still be acceptable; if not, it should not become a core dependency.
-
-The demo must host the same shared PersonCard component. A renderer-native template that merely looks similar does not pass the component requirement.
-
 ## Rejected candidates
 
 The following are no longer active implementation candidates:
@@ -137,10 +131,21 @@ The following are no longer active implementation candidates:
 | treeSpider | strict `id + parentId` hierarchy; demo also failed to load reliably |
 | d3-org-chart | secondary spouse connections do not participate in layout; one structural parent remains |
 | DHTMLX Diagram org chart | partner nodes cannot themselves be parents, preventing clean child-per-union semantics |
+| JSCharting Org | multiple-parent geometry worked in principle, but its HTML annotation layer rendered the shared Web Component markup as text; supporting it would require a renderer-specific card |
 | Topola | genealogy semantics are useful, but production visual design is too rigid/dated for this product |
 | Custom SVG demo | not a library candidate; removed after extracting the renderer-independent PersonCard baseline |
 
 Rejected renderers may still be used as design or implementation references. They should not receive more demo/integration work unless their underlying model changes.
+
+## Current comparison
+
+The practical comparison is now deliberately small:
+
+| Candidate | Collapse | Multiple marriages / correct parent pair | Exact shared card | Main concern |
+| --- | --- | --- | --- | --- |
+| Family Chart | yes | native relations, but known multi-spouse layout risk | yes | layout correctness / perceived speed |
+| BALKAN FamilyTreeJS 2 | yes | native | yes, via arbitrary HTML template | proprietary/commercial |
+| Vue Flow + ELK | ours | exact through explicit union nodes | yes | implementation/runtime weight |
 
 ## Final evaluation
 
