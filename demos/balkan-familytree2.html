@@ -5,14 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BALKAN FamilyTreeJS 2 demo</title>
   <link rel="stylesheet" href="./demo.css">
-  <script src="https://cdn.balkan.app/familytree2.js"></script>
   <style>
     #BalkanTree { width: 100%; height: 100%; }
     .balkan-demo-controls {
       position: absolute;
-      right: 34px;
-      bottom: 34px;
-      z-index: 10;
+      right: 18px;
+      bottom: 18px;
+      z-index: 20;
       display: flex;
       gap: 8px;
     }
@@ -25,6 +24,29 @@
       font: 12px/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
       color: #4f4941;
       box-shadow: 0 2px 8px rgba(48,42,34,.06);
+    }
+    .balkan-status {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      z-index: 30;
+      max-width: calc(100% - 28px);
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.94);
+      border: 1px solid rgba(49,45,39,.12);
+      box-shadow: 0 2px 8px rgba(48,42,34,.05);
+      font: 11px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #665f56;
+      pointer-events: none;
+    }
+    .balkan-status.ok { opacity: .62; }
+    .balkan-status.error {
+      color: #8d332f;
+      background: rgba(255,246,245,.97);
+      border-color: rgba(141,51,47,.22);
+      white-space: pre-wrap;
+      pointer-events: auto;
     }
   </style>
 </head>
@@ -40,12 +62,13 @@
   </nav>
 </header>
 <main>
-  <p class="demo-note">BALKAN FamilyTreeJS 2 is genealogy-specific: Daniel can have two spouses and each child keeps its actual mother/father pair. The node template hosts the exact same shared PersonCard Web Component used in the other demos. This browser integration is still experimental because the current CDN demo has not loaded reliably.</p>
+  <p class="demo-note">BALKAN FamilyTreeJS 2 using the same family fixture and the same shared PersonCard. The page first tries the official BALKAN CDN and falls back to the published NPM build through jsDelivr. A small status badge stays visible so mobile testing does not require opening DevTools.</p>
   <div class="canvas-shell" style="position:relative">
     <div id="BalkanTree"></div>
+    <div id="balkanStatus" class="balkan-status">Loading BALKAN FamilyTreeJS 2…</div>
     <div class="balkan-demo-controls">
-      <button id="collapse">Collapse descendants</button>
-      <button id="expand">Expand all</button>
+      <button id="collapse" disabled>Collapse</button>
+      <button id="expand" disabled>Expand</button>
     </div>
   </div>
 </main>
@@ -53,55 +76,97 @@
   import { family, byId } from './sample-data.js';
   import { personCardElementHtml, PERSON_CARD_WIDTH, PERSON_CARD_HEIGHT } from './person-card.js';
 
-  const members = Object.fromEntries(family.people.map(person => [person.id, {
-    id: person.id,
-    name: person.name,
-    years: person.years,
-    sex: person.sex,
-    deceased: Boolean(person.deceased),
-    photo: person.photo || '',
-    sexOrGender: person.sex === 'M' ? 'male' : person.sex === 'F' ? 'female' : undefined,
-    spouseIds: [],
-    childIds: []
-  }]));
+  const status = document.getElementById('balkanStatus');
+  const collapseButton = document.getElementById('collapse');
+  const expandButton = document.getElementById('expand');
 
-  for (const unit of family.families) {
-    const partners = unit.partners;
-
-    if (partners.length === 2) {
-      const [a, b] = partners;
-      if (!members[a].spouseIds.includes(b)) members[a].spouseIds.push(b);
-      if (!members[b].spouseIds.includes(a)) members[b].spouseIds.push(a);
-    }
-
-    for (const childId of unit.children) {
-      for (const parentId of partners) {
-        if (!members[parentId].childIds.includes(childId)) members[parentId].childIds.push(childId);
-      }
-
-      const child = members[childId];
-      const maleParent = partners.find(id => byId[id]?.sex === 'M');
-      const femaleParent = partners.find(id => byId[id]?.sex === 'F');
-      if (maleParent) child.fatherId = maleParent;
-      if (femaleParent) child.motherId = femaleParent;
-
-      if (partners.length === 1 && !maleParent && !femaleParent) child.parentId = partners[0];
-    }
+  function setStatus(message, kind = '') {
+    status.textContent = message;
+    status.className = `balkan-status${kind ? ` ${kind}` : ''}`;
   }
 
-  const tree = new FamilyTree2(document.getElementById('BalkanTree'));
-  tree.readOnly = true;
-  tree.navigationBar = false;
-  tree.template = FamilyTree2.createTemplate('genealogyPersonCard', 'base');
-  tree.templateName = 'genealogyPersonCard';
+  function loadScript(url) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = url;
+      script.async = true;
+      script.onload = () => resolve(url);
+      script.onerror = () => reject(new Error(`Failed to load ${url}`));
+      document.head.appendChild(script);
+    });
+  }
 
-  function applySharedCardTemplate(template) {
-    if (!template) return;
+  async function loadFamilyTree2() {
+    if (window.FamilyTree2) return { FamilyTree2: window.FamilyTree2, source: 'already loaded' };
+
+    const sources = [
+      'https://cdn.balkan.app/familytree2.js',
+      'https://cdn.jsdelivr.net/npm/@balkangraph/familytree2.js@2.0.186/familytree2.js'
+    ];
+
+    const failures = [];
+    for (const source of sources) {
+      try {
+        setStatus(`Loading library: ${source.includes('jsdelivr') ? 'jsDelivr fallback' : 'BALKAN CDN'}…`);
+        await loadScript(source);
+        if (window.FamilyTree2) {
+          return { FamilyTree2: window.FamilyTree2, source };
+        }
+        failures.push(`${source}: script loaded but window.FamilyTree2 is missing`);
+      } catch (error) {
+        failures.push(error.message);
+      }
+    }
+
+    throw new Error(failures.join('\n'));
+  }
+
+  function buildMembers() {
+    const members = Object.fromEntries(family.people.map(person => [person.id, {
+      id: person.id,
+      name: person.name,
+      years: person.years,
+      sex: person.sex,
+      deceased: Boolean(person.deceased),
+      photo: person.photo || '',
+      sexOrGender: person.sex === 'M' ? 'male' : person.sex === 'F' ? 'female' : undefined,
+      spouseIds: [],
+      childIds: []
+    }]));
+
+    for (const unit of family.families) {
+      const partners = unit.partners;
+
+      if (partners.length === 2) {
+        const [a, b] = partners;
+        if (!members[a].spouseIds.includes(b)) members[a].spouseIds.push(b);
+        if (!members[b].spouseIds.includes(a)) members[b].spouseIds.push(a);
+      }
+
+      for (const childId of unit.children) {
+        for (const parentId of partners) {
+          if (!members[parentId].childIds.includes(childId)) members[parentId].childIds.push(childId);
+        }
+
+        const child = members[childId];
+        const maleParent = partners.find(id => byId[id]?.sex === 'M');
+        const femaleParent = partners.find(id => byId[id]?.sex === 'F');
+        if (maleParent) child.fatherId = maleParent;
+        if (femaleParent) child.motherId = femaleParent;
+      }
+    }
+
+    return Object.values(members);
+  }
+
+  function configureTemplate(template) {
+    if (!template || typeof template !== 'object') return;
+
     template.width = PERSON_CARD_WIDTH;
     template.height = PERSON_CARD_HEIGHT;
-    template.strokeWidth = 0;
     template.fill = 'transparent';
-    template.svg = () => '';
+    template.stroke = 'transparent';
+    template.strokeWidth = 0;
     template.html = node => personCardElementHtml({
       id: node.familyMember.id,
       name: node.familyMember.name || 'Unknown person',
@@ -112,32 +177,67 @@
     });
   }
 
-  applySharedCardTemplate(tree.template);
-  for (const relationshipTemplate of Object.values(tree.template.nodes || {})) {
-    applySharedCardTemplate(relationshipTemplate);
+  try {
+    const loaded = await loadFamilyTree2();
+    const FamilyTree2 = loaded.FamilyTree2;
+    setStatus(`Library loaded. Building tree…`);
+
+    const tree = new FamilyTree2(document.getElementById('BalkanTree'));
+    tree.readOnly = true;
+    tree.navigationBar = false;
+
+    // Follow the current FamilyTreeJS 2 documentation literally: clone the
+    // base template, assign it to the tree, then set the custom template name.
+    tree.template = FamilyTree2.createTemplate('genealogyPersonCard', 'base');
+    tree.templateName = 'genealogyPersonCard';
+
+    configureTemplate(tree.template);
+
+    // Relationship variants can override base dimensions/content. Only touch
+    // documented object templates; do not blindly mutate every value in nodes.
+    const relationshipTypes = [
+      'focus', 'spouse', 'parent', 'child', 'childInLaw', 'sibling',
+      'parentSibling', 'parentInLaw', 'pibling', 'stepParent'
+    ];
+    for (const type of relationshipTypes) {
+      configureTemplate(tree.template.nodes?.[type]);
+    }
+
+    const separations = tree.template.separations;
+    if (separations) {
+      separations.focusSide = 34;
+      separations.parentSide = 34;
+      separations.parentNeighbor = 34;
+      separations.childSide = 34;
+      separations.childNeighbor = 34;
+      separations.spouseNeighbor = 28;
+      separations.parentLevel = 108;
+      separations.childLevel = 108;
+    }
+
+    tree.onLoaded(() => {
+      tree.fit();
+      collapseButton.disabled = false;
+      expandButton.disabled = false;
+      const sourceLabel = loaded.source.includes('jsdelivr') ? 'jsDelivr/NPM' : 'BALKAN CDN';
+      setStatus(`Running · ${sourceLabel}`, 'ok');
+    });
+
+    tree.addFamilyMembers(buildMembers()).draw('P3');
+
+    collapseButton.addEventListener('click', () => {
+      tree.collapsedIds = ['P6', 'P7', 'P8', 'P13'];
+      tree.draw('P3', null, () => tree.fit());
+    });
+
+    expandButton.addEventListener('click', () => {
+      tree.collapsedIds = [];
+      tree.draw('P3', null, () => tree.fit());
+    });
+  } catch (error) {
+    console.error(error);
+    setStatus(`BALKAN demo failed:\n${error?.stack || error}`, 'error');
   }
-
-  if (tree.template.separations) {
-    tree.template.separations.focusSide = 34;
-    tree.template.separations.parentSide = 34;
-    tree.template.separations.childSide = 34;
-    tree.template.separations.spouseNeighbor = 28;
-    tree.template.separations.childLevel = 108;
-    tree.template.separations.parentLevel = 108;
-  }
-
-  tree.onLoaded(() => tree.fit());
-  tree.addFamilyMembers(Object.values(members)).draw('P3');
-
-  document.getElementById('collapse').addEventListener('click', () => {
-    tree.collapsedIds = ['P6', 'P7', 'P8', 'P13'];
-    tree.draw('P3', null, () => tree.fit());
-  });
-
-  document.getElementById('expand').addEventListener('click', () => {
-    tree.collapsedIds = [];
-    tree.draw('P3', null, () => tree.fit());
-  });
 </script>
 </body>
 </html>
