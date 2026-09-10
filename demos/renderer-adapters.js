@@ -25,7 +25,8 @@ export function toFamilyChartData(family) {
   }
 
   return family.people.map(person => {
-    const [firstName, ...rest] = String(person.name || '').split(' ');
+    const sourceName = String(person.name || '');
+    const [firstName, ...rest] = sourceName.split(' ');
     return {
       id: person.id,
       data: {
@@ -33,6 +34,9 @@ export function toFamilyChartData(family) {
         sex: person.sex || '',
         deceased: Boolean(person.deceased),
         photo: person.photo || '',
+        cardName: person.cardName || '',
+        birthSurname: person.birthSurname || '',
+        marriedSurname: person.marriedSurname || '',
         'first name': firstName || person.id,
         'last name': rest.join(' '),
         years: person.years || ''
@@ -46,7 +50,10 @@ export function toBalkanFamilyTree2Data(family) {
   const byId = Object.fromEntries(family.people.map(person => [person.id, person]));
   const members = Object.fromEntries(family.people.map(person => [person.id, {
     id: person.id,
-    name: person.name || person.id,
+    name: person.cardName || person.name || person.id,
+    sourceName: person.name || person.id,
+    birthSurname: person.birthSurname || '',
+    marriedSurname: person.marriedSurname || '',
     years: person.years || '',
     sex: person.sex || '',
     deceased: Boolean(person.deceased),
@@ -86,7 +93,7 @@ export function toBalkanFamilyTree2Data(family) {
   return Object.values(members);
 }
 
-export function toVueFlowElkData(family, { personWidth = 240, personHeight = 104, familySize = 18 } = {}) {
+export function toVueFlowElkData(family, { personWidth = 240, personHeight = 120, familySize = 18 } = {}) {
   const nodes = [
     ...family.people.map(person => ({
       id: person.id,
