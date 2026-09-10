@@ -1,5 +1,5 @@
 export const PERSON_CARD_WIDTH = 240;
-export const PERSON_CARD_HEIGHT = 104;
+export const PERSON_CARD_HEIGHT = 120;
 
 const esc = value => String(value ?? '')
   .replaceAll('&', '&amp;')
@@ -30,9 +30,16 @@ const nameSizeClass = name => {
   return '';
 };
 
+const shouldShowBirthSurname = (name, birthSurname) => {
+  const surname = String(birthSurname || '').trim();
+  if (!surname) return false;
+  const displayName = String(name || '').trim().toLocaleLowerCase();
+  return !displayName.endsWith(surname.toLocaleLowerCase());
+};
+
 export class GenealogyPersonCard extends HTMLElement {
   static get observedAttributes() {
-    return ['person-id', 'name', 'years', 'sex', 'deceased', 'photo'];
+    return ['person-id', 'name', 'years', 'sex', 'deceased', 'photo', 'birth-surname'];
   }
 
   constructor() {
@@ -55,6 +62,8 @@ export class GenealogyPersonCard extends HTMLElement {
     const sex = normalizeSex(this.getAttribute('sex'));
     const deceased = this.hasAttribute('deceased');
     const photo = this.getAttribute('photo') || '';
+    const birthSurname = this.getAttribute('birth-surname') || '';
+    const showBirthSurname = shouldShowBirthSurname(name, birthSurname);
 
     const avatarContent = photo
       ? `<img class="avatar-photo" src="${esc(photo)}" alt="" draggable="false">`
@@ -173,6 +182,14 @@ export class GenealogyPersonCard extends HTMLElement {
         }
         .name-long { font-size: 13px; line-height: 1.16; }
         .name-xlong { font-size: 12px; line-height: 1.14; }
+        .birth-surname {
+          margin-top: 4px;
+          font-size: 11px;
+          line-height: 1.15;
+          color: #9a7368;
+          white-space: normal;
+          overflow-wrap: anywhere;
+        }
         .years {
           margin-top: 5px;
           font-size: 12px;
@@ -188,6 +205,7 @@ export class GenealogyPersonCard extends HTMLElement {
         </div>
         <div class="text">
           <div class="name${nameSizeClass(name)}">${esc(name)}</div>
+          ${showBirthSurname ? `<div class="birth-surname">при рожд. ${esc(birthSurname)}</div>` : ''}
           <div class="years">${esc(years)}</div>
         </div>
       </article>`;
@@ -201,12 +219,14 @@ if (!customElements.get('genealogy-person-card')) {
 export function personCardElementHtml(person) {
   const deceasedAttribute = person.deceased ? '\n    deceased' : '';
   const photoAttribute = person.photo ? `\n    photo="${esc(person.photo)}"` : '';
+  const birthSurnameAttribute = person.birthSurname ? `\n    birth-surname="${esc(person.birthSurname)}"` : '';
+  const displayName = person.cardName || person.name || 'Unknown person';
 
   return `<genealogy-person-card
     style="display:block;width:${PERSON_CARD_WIDTH}px;height:${PERSON_CARD_HEIGHT}px"
     person-id="${esc(person.id || '')}"
-    name="${esc(person.name || 'Unknown person')}"
+    name="${esc(displayName)}"
     years="${esc(person.years || '')}"
-    sex="${esc(person.sex || '')}"${deceasedAttribute}${photoAttribute}
+    sex="${esc(person.sex || '')}"${deceasedAttribute}${photoAttribute}${birthSurnameAttribute}
   ></genealogy-person-card>`;
 }
