@@ -1,0 +1,4 @@
+# Local/private genealogy fixtures. Never publish real family data by accident.
+demos/private-data/
+*.private.json
+*.private.js
