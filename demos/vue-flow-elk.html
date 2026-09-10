@@ -13,11 +13,11 @@
   <style>
     #app, .vue-flow { width: 100%; height: 100%; }
     .vue-flow__node-person, .vue-flow__node-family { border: 0; background: transparent; padding: 0; box-shadow: none; }
-    .vue-flow__node-person { width: 240px; height: 120px; }
+    .vue-flow__node-person { width: 240px; height: 108px; }
     .vue-flow__node-family { width: 18px; height: 18px; }
     .vue-flow__handle { width: 1px !important; height: 1px !important; min-width: 1px; min-height: 1px; opacity: 0; border: 0; }
     .vue-flow__edge-path { stroke: #aaa298; stroke-width: 1.35; }
-    .person-node-wrap { width: 240px; height: 120px; position: relative; }
+    .person-node-wrap { width: 240px; height: 108px; position: relative; }
     .union-wrap { width: 18px; height: 18px; position: relative; display: grid; place-items: center; }
   </style>
 </head>
@@ -33,7 +33,7 @@
   </nav>
 </header>
 <main>
-  <p class="demo-note">Vue Flow owns interaction and ELK owns coordinates. By default this page renders the real MyHeritage snapshot centered on Anton; append <code>?sample=1</code> for the synthetic fixture. Person nodes use the same shared PersonCard; family/union nodes remain explicit.</p>
+  <p class="demo-note">Vue Flow owns interaction and ELK owns coordinates. By default this page renders the current MyHeritage snapshot centered on Anton; append <code>?sample=1</code> for the synthetic fixture. Person nodes use the same shared PersonCard; family/union nodes remain explicit.</p>
   <div class="canvas-shell"><div id="app">
     <vue-flow :nodes="nodes" :edges="edges" :fit-view-on-init="true" :min-zoom="0.1" :max-zoom="2" :nodes-draggable="false">
       <template #node-person="{ data }">
@@ -74,8 +74,8 @@
     layoutOptions: {
       'elk.algorithm': 'layered',
       'elk.direction': 'DOWN',
-      'elk.spacing.nodeNode': '40',
-      'elk.layered.spacing.nodeNodeBetweenLayers': '120',
+      'elk.spacing.nodeNode': '36',
+      'elk.layered.spacing.nodeNodeBetweenLayers': '96',
       'elk.edgeRouting': 'ORTHOGONAL',
       'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES'
     },
