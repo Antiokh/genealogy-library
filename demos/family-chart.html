@@ -20,9 +20,9 @@
     #FamilyChart div.card.card-genderless,
     #FamilyChart div.card-inner,
     #FamilyChart .genealogy-card-host {
-      width: 184px !important;
-      height: 72px !important;
-      min-height: 72px !important;
+      width: 240px !important;
+      height: 104px !important;
+      min-height: 104px !important;
       margin: 0 !important;
       padding: 0 !important;
       border: 0 !important;
@@ -68,8 +68,8 @@
 
   const chart = f3.createChart('#FamilyChart', data)
     .setTransitionTime(0)
-    .setCardXSpacing(220)
-    .setCardYSpacing(120);
+    .setCardXSpacing(286)
+    .setCardYSpacing(156);
 
   chart.setCardHtml()
     .setCardInnerHtmlCreator(d => {
