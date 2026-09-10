@@ -25,6 +25,7 @@ Important observations:
 - Existing values can be refined (for example year-only -> full date), corrected, transliterated, renamed, or genuinely contradicted.
 - Different GEDCOM datasets use unrelated XREFs for the same real person.
 - A same-name match can also be a completely different person. Names cannot be identity keys.
+- The same real name can appear in Cyrillic and several Latin transliterations. Cross-script matching is therefore mandatory.
 - The separate dataset stores family links primarily through `FAM` records, while MyHeritage also emits `FAMC` / `FAMS` from individuals. The importer must understand both representations.
 - MyHeritage includes many vendor-specific tags (`_UID`, `_UPD`, `RIN`, media metadata, source metadata, etc.). The separate dataset is much more minimal.
 
@@ -137,7 +138,8 @@ Never equate people merely because names match.
 
 Candidate matching may use:
 
-- normalized name and aliases;
+- normalized name components and aliases;
+- Cyrillic/Latin transliteration-aware name comparison;
 - sex;
 - birth/death dates;
 - parents;
@@ -148,6 +150,31 @@ Candidate matching may use:
 Family context is especially valuable. Two records with the same name but different parents may be different people; two records with transliterated names but the same birth date and same parents may be a very strong match.
 
 Cross-dataset matching should initially be presented as a suggestion. Once confirmed, the mapping is persisted and future imports become deterministic.
+
+### Cyrillic and Latin names
+
+Cross-script matching is a first-class requirement rather than a later fuzzy-search enhancement.
+
+For example, all of these may represent the same candidate person:
+
+```text
+Алексей Назаров
+Aleksei Nazarov
+Aleksey Nazarov
+Alexey Nazarov
+```
+
+The matcher should therefore derive comparison keys that can bridge scripts and common transliteration variants.
+
+However transliteration must not become destructive normalization:
+
+- preserve original/imported spellings;
+- do not silently replace Cyrillic with Latin or vice versa;
+- keep useful alternative spellings/transliterations as aliases;
+- treat transliteration similarity as evidence for identity, not proof;
+- use dates and family context as stronger corroborating evidence.
+
+The canonical display name can be chosen or edited independently from the matching keys used internally.
 
 ## Normalize before comparing
 
@@ -161,7 +188,8 @@ Normalize at least:
 - empty events (`BIRT` or `DEAT` with no value);
 - equivalent relationship representation (`FAM` versus `FAMC` / `FAMS`);
 - collection ordering where order has no semantic meaning, especially `CHIL`;
-- whitespace and continuation records.
+- whitespace and continuation records;
+- name comparison keys across Cyrillic/Latin scripts and common transliteration variants.
 
 Place normalization should be conservative. `Москва` and a longer geocoded Moscow value may describe the same place, but automatic normalization must not silently collapse genuinely different locations.
 
@@ -212,6 +240,8 @@ Two established values cannot both be the same fact.
 Examples seen in the fixtures include different years, substantially different exact dates, and corrected personal names.
 
 Action: never resolve by "latest file wins" across independent sources. Present both values with source provenance and require a decision unless an explicit source-priority rule exists.
+
+A Cyrillic/Latin spelling difference should not be classified as a destructive conflict merely because the strings differ. It may be an alias/transliteration of the same name and should be reviewed after cross-script normalization.
 
 ### `identity-ambiguous`
 
@@ -305,10 +335,11 @@ The first importer should prefer correctness and inspectability over aggressive 
 
 1. Detect exact duplicate files.
 2. Recognize repeated snapshots of a known dataset.
-3. Normalize before diffing.
+3. Normalize before diffing, including Cyrillic/Latin name comparison keys.
 4. Reuse persisted XREF -> internal ID mappings.
-5. Suggest cross-dataset identity matches, but require confirmation initially.
+5. Suggest cross-dataset identity matches using transliteration-aware names plus dates and family context, but require confirmation initially.
 6. Auto-merge only clearly compatible additions/enrichments after identity is known.
 7. Surface destructive scalar conflicts explicitly.
-8. Write canonical records only after producing an import report.
-9. Keep build logic completely independent from import history.
+8. Preserve alternate name spellings/transliterations rather than silently rewriting them.
+9. Write canonical records only after producing an import report.
+10. Keep build logic completely independent from import history.
