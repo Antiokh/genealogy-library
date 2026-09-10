@@ -5,13 +5,11 @@ import { people4 } from './people-4.js';
 import { people5 } from './people-5.js';
 import { people6 } from './people-6.js';
 import { families1 } from './families-1.js';
-import { nameVariants } from './name-variants.js';
 
-const people = [...people1, ...people2, ...people3, ...people4, ...people5, ...people6]
-  .map(person => ({ ...person, ...(nameVariants[person.id] || {}) }));
+const people = [...people1, ...people2, ...people3, ...people4, ...people5, ...people6];
 
 export const family = {
-  source: 'MyHeritage snapshot 2023-11-25',
+  source: 'MyHeritage snapshot 2026-09-10',
   root: 'I500001',
   people,
   families: [...families1]
