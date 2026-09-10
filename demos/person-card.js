@@ -99,8 +99,8 @@ export class GenealogyPersonCard extends HTMLElement {
         .avatar-photo {
           position: relative;
           z-index: 1;
-          width: 41px;
-          height: 41px;
+          width: 43px;
+          height: 43px;
           display: block;
           border-radius: 50%;
           object-fit: cover;
