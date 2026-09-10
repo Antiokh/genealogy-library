@@ -1,43 +1,95 @@
 # Tree visualization decision
 
-This document records the first visualization decision for Genealogy Library.
+This document records the current visualization direction for Genealogy Library.
 
 The current scope is intentionally narrow: **family trees only**. Pedigree/fan/timeline/map views can be evaluated later.
 
 ## Core requirement
 
-The renderer must understand genealogy as more than a generic hierarchy.
+The visualization must understand genealogy as more than a generic hierarchy.
 
 A marriage/partnership must be representable as a real family/union context so that children belong to the correct couple. This matters for remarriages, multiple partners, half-siblings and other normal genealogy cases.
 
-A renderer whose only native structure is `node -> parentId` is not a suitable primary genealogy renderer.
+At the same time, Genealogy Library is a browse-first product. Visual quality is therefore a primary requirement, not a cosmetic follow-up. A genealogy-aware renderer with an unacceptable fixed visual design is not a suitable production renderer.
 
-## Initial choice: Topola
+## Current direction: own presentation layer over a generic graph renderer
+
+After testing/reviewing Topola, it is no longer the preferred production renderer. Its genealogy model is useful, but its visual language is too dated and rigid for the intended family-encyclopedia experience.
+
+The preferred implementation direction is now:
+
+```text
+canonical Markdown
+        ↓
+stateless genealogy build
+        ↓
+people + family/union nodes
+        ↓
+family-tree layout adapter
+        ↓
+Vue Flow presentation
+```
+
+### Vue Flow
+
+Repository: `bcakmakoglu/vue-flow`
+
+Use Vue Flow primarily for interaction and rendering:
+
+- arbitrary custom person cards;
+- arbitrary custom family/union nodes;
+- custom relationship edges;
+- zoom and pan;
+- selection/focus;
+- responsive interaction;
+- future lightweight edit actions around a person card.
+
+It is a generic graph UI, which is an advantage here: it does not impose a genealogy-specific visual design. Genealogy semantics stay in our generated graph and layout adapter.
+
+### Layout engine
+
+The initial layout experiment should use `elkjs` / Eclipse Layout Kernel.
+
+ELK computes graph positions but does not render the UI. This separation allows the layout algorithm to be replaced without rewriting cards or interactions.
+
+The family/union record should be projected as a small or invisible layout node:
+
+```text
+P001 ──┐
+       F001
+P002 ──┘
+        │
+   ┌────┴────┐
+ P003       P004
+```
+
+For another partnership:
+
+```text
+P001 ── F001 ── P002
+          │
+       P003 P004
+
+P001 ── F002 ── P006
+          │
+          P005
+```
+
+This keeps the graph unambiguous: children connect to a specific family/union, not merely to a person who happens to have multiple spouses.
+
+ELK is not genealogy-aware, so the proof-of-concept must verify that its layered layout plus constraints/ports produces acceptable spouse alignment and child routing. If not, keep Vue Flow and replace only the layout algorithm.
+
+## Topola: domain/layout reference, not production UI
 
 Repository: `PeWu/topola`
 
-Topola is the preferred first renderer to integrate.
-
-Reasons:
-
-- genealogy-specific rather than generic org-chart software;
-- TypeScript/JavaScript and browser/SVG based;
-- Apache-2.0 licensed;
-- can be embedded as a library rather than requiring a server application;
-- supports ancestor, descendant, hourglass, relatives and kinship-oriented views;
-- accepts either GEDCOM data or its own JSON data provider;
-- family is a first-class record in its JSON model;
-- one individual may belong to multiple spouse families;
-- each family record owns its own children and marriage metadata.
-
-The relevant Topola JSON shape is conceptually:
+Topola remains useful because its internal JSON model treats a family as a first-class record:
 
 ```ts
 interface JsonIndi {
   id: string;
   famc?: string;
   fams?: string[];
-  // ...person data
 }
 
 interface JsonFam {
@@ -49,84 +101,101 @@ interface JsonFam {
 }
 ```
 
-This is close to the provider-independent generated model already planned for Genealogy Library:
+Useful parts to study:
 
-```text
-canonical Markdown people
-        ↓
-stateless build
-        ↓
-people + families
-        ↓
-Topola adapter
-```
+- family-aware hierarchy construction;
+- ancestor/descendant/relatives traversal;
+- handling one individual in multiple spouse families;
+- duplicate appearance of the same person in complex views;
+- GEDCOM-to-family graph behavior.
 
-The canonical schema must still remain independent of Topola. The adapter may translate our gender-neutral partnership/family representation into Topola's current `husb` / `wife` fields where necessary.
+Do not use Topola's current visual design as the primary site UI and do not let its `husb` / `wife` API shape the canonical gender-neutral model.
 
-## Why not Family Chart as the primary renderer
+## Family Chart: visual reference / possible prototype
 
 Repository: `donatso/family-chart`
 
-Family Chart remains visually attractive and worth keeping as a secondary experiment. It is MIT licensed, D3-based, framework-agnostic, and easy to embed.
+Family Chart remains the strongest off-the-shelf visual reference found so far. It is visually much closer to the intended product and easy to embed.
 
-However its current public data model stores `parents`, `spouses` and `children` directly on person records and expects relationships to be bidirectional. More importantly, there is an open 2026 issue around multiple-spouse layout where spouses can stack on one side and children may not visually descend from the correct couple.
+However its public data model stores `parents`, `spouses` and `children` on people, and an open 2026 issue reports incorrect multi-spouse placement where children can visually descend from the wrong couple.
 
-That problem hits one of our primary requirements directly. Family Chart should therefore not define the canonical graph or be the first renderer we depend on.
+That is a core genealogy correctness issue for this project. Therefore:
 
-It may still become useful later for local-person views if the multi-spouse layout matures.
+- use it as a design benchmark;
+- it can be used for a quick visual prototype;
+- do not make its relationship model canonical;
+- do not depend on it as the only production renderer until multi-spouse behavior is verified/fixed.
 
-## Why not BALKAN FamilyTreeJS
-
-BALKAN FamilyTreeJS has a convenient explicit relationship API (`pids`, `mid`, `fid`) and a strong built-in UI, but it is proprietary. Ongoing use requires commercial licensing outside its limited trial/evaluation terms.
-
-That conflicts with the independence goal of Genealogy Library, so it is not the preferred foundation.
+If its layout code is substantially easier to adapt than building our own, an MIT-compatible fork or focused fix may be evaluated separately.
 
 ## Other useful references
 
-### js_family_tree
+### React Flow
 
-Repository: `BenPortner/js_family_tree`
+Repository: `xyflow/xyflow`
 
-Interesting mainly because it explicitly models `persons`, `unions`, and links between them. That is structurally close to our graph philosophy and can be used as a layout/reference implementation if Topola becomes too restrictive.
-
-It is GPL-3.0 and substantially smaller/less mature than Topola, so it is not the first choice.
+React Flow is the closest mature alternative to Vue Flow and has a very large ecosystem. The architecture described here works equally well with it. Vue Flow is currently preferred only at the presentation-framework level; the generated genealogy graph and layout adapter must not depend on Vue.
 
 ### entitree-flex
 
 Repository: `codeledge/entitree-flex`
 
-Useful as a low-level layout algorithm supporting parents, children and spouse side-nodes. It is not a complete genealogy renderer. Keep it as a fallback if we eventually build our own HTML/SVG cards while outsourcing only layout.
+A low-level family-tree-oriented layout algorithm supporting parents, children and side nodes such as spouses. It may be worth testing if ELK requires too much constraint work. Its GPL-3.0 license needs to be considered before production use.
 
-### Generic graph libraries
+### js_family_tree
 
-Cytoscape.js, d3-dag and similar graph libraries can represent explicit union nodes and therefore can model genealogy correctly. However they leave much more genealogy-specific layout behavior to us. They are fallback building blocks, not the first implementation target.
+Repository: `BenPortner/js_family_tree`
 
-## Integration rule
+Interesting because it explicitly models persons and unions. Keep it as a structural/layout reference rather than the main renderer.
 
-Topola is a renderer, not the data model.
+### GoJS Genogram
 
-Do not make canonical Markdown emit Topola fields directly. The intended flow is:
+GoJS has a mature custom genogram layout where marriage pairs are treated specially by the layout algorithm. It is a useful benchmark for what correct spouse/family geometry should look like, but GoJS is commercial and is not preferred as a dependency for an independence-oriented open project.
+
+### Cytoscape.js / D3
+
+Both can render our explicit union-node graph and provide maximum freedom, but they require more interaction/layout code than Vue Flow. Keep them as lower-level fallbacks.
+
+## Renderer-independent contract
+
+No visualization library becomes the data model.
 
 ```text
-src/content/people/**
+src/content/**
         ↓
-build canonical genealogy graph
+canonical genealogy compiler
         ↓
 generated/genealogy.json
         ↓
-adapters/topola
+view-specific projection
         ↓
-Topola
+layout engine
+        ↓
+renderer
 ```
 
-The first proof-of-concept should use a real imported family dataset and explicitly test:
+A renderer change must not alter canonical Markdown or stable person/family identities.
+
+## First proof-of-concept
+
+The next useful implementation spike should not build the whole site. It should render one real family slice with custom cards and explicit union nodes.
+
+Test at minimum:
 
 1. one marriage with children;
-2. a person with two marriages and children from both;
+2. one person with two partnerships and children from both;
 3. half-siblings;
-4. a spouse with their own ancestors;
-5. unknown/missing spouse;
-6. cousin/pedigree-collapse cases if present in the source data;
-7. roughly 250 people to check interaction and performance.
+4. spouse ancestors;
+5. one unknown/missing parent;
+6. a larger collateral branch;
+7. fit/zoom/navigation with the full roughly 250-person dataset.
 
-If Topola renders these cases correctly and the result is visually acceptable, it becomes the first production tree renderer. If not, retain the same generated genealogy graph and replace only the adapter/renderer.
+The primary evaluation criteria are:
+
+- children visually originate from the correct partnership;
+- spouses are visually obvious without turning the chart into an org chart;
+- cards can look like part of the Genealogy Library site rather than a third-party widget;
+- the graph remains readable with real family density;
+- clicking/focusing a person can become the basis for future lightweight editing.
+
+If Vue Flow + ELK cannot satisfy the family geometry cleanly, keep the generated graph and Vue Flow presentation layer and replace only the layout algorithm.
