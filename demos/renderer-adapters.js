@@ -86,7 +86,7 @@ export function toBalkanFamilyTree2Data(family) {
   return Object.values(members);
 }
 
-export function toVueFlowElkData(family, { personWidth = 184, personHeight = 72, familySize = 18 } = {}) {
+export function toVueFlowElkData(family, { personWidth = 240, personHeight = 104, familySize = 18 } = {}) {
   const nodes = [
     ...family.people.map(person => ({
       id: person.id,
