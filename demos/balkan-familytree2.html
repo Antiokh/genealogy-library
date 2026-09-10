@@ -40,7 +40,7 @@
   </nav>
 </header>
 <main>
-  <p class="demo-note">BALKAN FamilyTreeJS 2 is genealogy-specific: Daniel can have two spouses and each child keeps its actual mother/father pair. The node template hosts the exact same shared PersonCard Web Component used in the other demos. Use the tree's own relation controls where shown; the buttons at bottom-right also exercise its collapsedIds API directly.</p>
+  <p class="demo-note">BALKAN FamilyTreeJS 2 is genealogy-specific: Daniel can have two spouses and each child keeps its actual mother/father pair. The node template hosts the exact same shared PersonCard Web Component used in the other demos. This browser integration is still experimental because the current CDN demo has not loaded reliably.</p>
   <div class="canvas-shell" style="position:relative">
     <div id="BalkanTree"></div>
     <div class="balkan-demo-controls">
@@ -57,6 +57,9 @@
     id: person.id,
     name: person.name,
     years: person.years,
+    sex: person.sex,
+    deceased: Boolean(person.deceased),
+    photo: person.photo || '',
     sexOrGender: person.sex === 'M' ? 'male' : person.sex === 'F' ? 'female' : undefined,
     spouseIds: [],
     childIds: []
@@ -82,7 +85,6 @@
       if (maleParent) child.fatherId = maleParent;
       if (femaleParent) child.motherId = femaleParent;
 
-      // The synthetic single-parent family still remains representable.
       if (partners.length === 1 && !maleParent && !femaleParent) child.parentId = partners[0];
     }
   }
@@ -103,7 +105,10 @@
     template.html = node => personCardElementHtml({
       id: node.familyMember.id,
       name: node.familyMember.name || 'Unknown person',
-      years: node.familyMember.years || ''
+      years: node.familyMember.years || '',
+      sex: node.familyMember.sex || '',
+      deceased: Boolean(node.familyMember.deceased),
+      photo: node.familyMember.photo || ''
     });
   }
 
@@ -112,7 +117,6 @@
     applySharedCardTemplate(relationshipTemplate);
   }
 
-  // Keep the comparison compact around the same 184x72 card used everywhere else.
   if (tree.template.separations) {
     tree.template.separations.focusSide = 34;
     tree.template.separations.parentSide = 34;
