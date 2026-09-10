@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Family Chart demo</title>
+  <link rel="stylesheet" href="./demo.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/family-chart@0.9.0/dist/styles/family-chart.css">
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <style>
+    #FamilyChart { width: 100%; height: 100%; }
+    #FamilyChart .card_cont { overflow: visible; }
+    #FamilyChart .card-inner { width: 184px; min-height: 72px; }
+    #FamilyChart path.link { stroke: #aaa298; stroke-width: 1.35px; }
+  </style>
+</head>
+<body>
+<header>
+  <strong>Tree demo</strong>
+  <nav>
+    <a href="./index.html">Overview</a>
+    <a class="active" href="./family-chart.html">Family Chart</a>
+    <a href="./vue-flow-elk.html">Vue Flow + ELK</a>
+    <a href="./custom-svg.html">Custom SVG</a>
+  </nav>
+</header>
+<main>
+  <p class="demo-note">Free Family Chart with its default genealogy layout, but our own visual card. This is the quickest implementation; inspect Daniel Morgan's two unions and where the three children land.</p>
+  <div class="canvas-shell"><div id="FamilyChart" class="f3"></div></div>
+</main>
+<script type="module">
+  import * as f3 from 'https://esm.sh/family-chart@0.9.0';
+  import { family } from './sample-data.js';
+
+  const rels = Object.fromEntries(family.people.map(p => [p.id, { parents: [], spouses: [], children: [] }]));
+
+  for (const unit of family.families) {
+    const [a, b] = unit.partners;
+    if (a && b) {
+      if (!rels[a].spouses.includes(b)) rels[a].spouses.push(b);
+      if (!rels[b].spouses.includes(a)) rels[b].spouses.push(a);
+    }
+    for (const child of unit.children) {
+      for (const parent of unit.partners) {
+        if (!rels[parent].children.includes(child)) rels[parent].children.push(child);
+        if (!rels[child].parents.includes(parent)) rels[child].parents.push(parent);
+      }
+    }
+  }
+
+  const data = family.people.map(person => {
+    const [firstName, ...rest] = person.name.split(' ');
+    return {
+      id: person.id,
+      data: {
+        gender: person.sex,
+        'first name': firstName,
+        'last name': rest.join(' '),
+        years: person.years
+      },
+      rels: rels[person.id]
+    };
+  });
+
+  const initials = name => name.split(/\s+/).map(s => s[0]).slice(0, 2).join('');
+
+  const chart = f3.createChart('#FamilyChart', data)
+    .setTransitionTime(280)
+    .setCardXSpacing(220)
+    .setCardYSpacing(120);
+
+  chart.setCardHtml()
+    .setCardInnerHtmlCreator(d => {
+      const p = d.data.data;
+      const name = [p['first name'], p['last name']].filter(Boolean).join(' ');
+      return `
+        <div class="person-card card-inner">
+          <div class="avatar">${initials(name)}</div>
+          <div>
+            <div class="name">${name}</div>
+            <div class="years">${p.years || ''}</div>
+          </div>
+        </div>`;
+    });
+
+  chart.updateTree({ initial: true, main_id: 'P3' });
+</script>
+</body>
+</html>
