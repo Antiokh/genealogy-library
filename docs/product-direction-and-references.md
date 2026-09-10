@@ -183,7 +183,33 @@ Potentially useful for its explicit person/couple model, multiple partnerships/r
 
 It is a conventional Laravel/database application, so its persistence model should not drive our canonical format.
 
-### 5. deep_architecture_genealogy
+### 5. Claude Family History Research Skill
+
+Repository: `emaynard/claude-family-history-research-skill`
+
+Useful as a future reference for the **research/evidence layer**, not for storage, GEDCOM parsing, graph construction, or visualization.
+
+The useful distinction is between:
+
+```text
+Source -> Information -> Evidence -> Conclusion
+```
+
+The project also provides practical patterns for citation templates, research logs, evidence comparison, conflict analysis, and Genealogical Proof Standard-oriented workflows.
+
+Concepts worth preserving for future schema design:
+
+- source classification (original / derivative / authored);
+- information classification (primary / secondary / undetermined);
+- evidence classification (direct / indirect / negative);
+- explicit evidence conflicts and reasoned conclusions;
+- research logs and research questions as optional maintenance/research artifacts.
+
+This is a different problem from GEDCOM import conflicts. An import conflict asks which incoming value should be written to the repository; an evidence conflict asks which historical claim is best supported by sources. Do not conflate them.
+
+Do not copy the skill's rigid workflow requirement that every research action must begin with a formal plan, and do not turn heuristic numerical evidence weights into canonical confidence scores. Genealogy Library should remain browse-first and lightweight, with deeper evidence/research workflows available only when useful.
+
+### 6. deep_architecture_genealogy
 
 Repository: `hunkim/deep_architecture_genealogy`
 
@@ -216,6 +242,9 @@ Charted Roots
 
 GEDKeeper
   -> GEDCOM implementation and edge cases
+
+Claude Family History Research Skill
+  -> future source/citation/evidence/research methodology
 
 Family Chart / Topola
   -> visualization experiments
