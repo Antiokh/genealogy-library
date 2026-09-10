@@ -34,7 +34,7 @@
   </nav>
 </header>
 <main>
-  <p class="demo-note">This is the shared card component. Names are intentionally allowed to wrap: compound given names and compound surnames must stay fully visible rather than being ellipsized. The last two cards are stress cases.</p>
+  <p class="demo-note">This is the shared card component. Names can wrap without ellipsis, compound names stay visible, and a changed surname can show the surname at birth separately. The last cards are stress cases.</p>
   <div class="card-preview" id="cards"></div>
 </main>
 <script type="module">
@@ -45,6 +45,17 @@
   const byId = Object.fromEntries(family.people.map(person => [person.id, person]));
   const cards = [
     ...sampleIds.map(id => ({ ...byId[id], label: id })),
+    {
+      id: 'BIRTH-SURNAME',
+      name: 'Мария Попова',
+      cardName: 'Мария Назарова',
+      birthSurname: 'Попова',
+      marriedSurname: 'Назарова',
+      years: '1934–2022',
+      sex: 'F',
+      deceased: true,
+      label: 'surname at birth'
+    },
     {
       id: 'LONG-RU',
       name: 'Александр-Леонид фон дер Берг-Михайлов',
