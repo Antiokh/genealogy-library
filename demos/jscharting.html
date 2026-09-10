@@ -14,31 +14,34 @@
   <strong>Tree demo</strong>
   <nav>
     <a href="./index.html">Overview</a>
+    <a href="./person-card.html">Person card</a>
     <a href="./family-chart.html">Family Chart</a>
     <a class="active" href="./jscharting.html">JSCharting</a>
     <a href="./vue-flow-elk.html">Vue Flow + ELK</a>
-    <a href="./custom-svg.html">Custom SVG</a>
   </nav>
 </header>
 <main>
-  <p class="demo-note">JSCharting remains in the shortlist because its organizational layout supports multiple parents. Each marriage/partnership is an explicit union node whose parents are the two partners; children then descend from that union. This preserves which child belongs to which couple without duplicating people.</p>
+  <p class="demo-note">JSCharting keeps the explicit multi-parent union model, but now attempts to host the exact shared PersonCard Web Component. This is intentional: if its HTML annotation layer cannot render the component cleanly, it fails the custom-card hard requirement rather than getting a special JSCharting-only card.</p>
   <div class="canvas-shell"><div id="JSC"></div></div>
 </main>
 <script src="https://code.jscharting.com/latest/jscharting.js"></script>
 <script src="https://code.jscharting.com/latest/modules/types.js"></script>
 <script type="module">
   import { family, byId } from './sample-data.js';
+  import { personCardElementHtml } from './person-card.js';
 
-  const initials = name => name.split(/\s+/).map(s => s[0]).slice(0, 2).join('');
   const personPoint = (id, parent) => {
     const p = byId[id];
     return {
       id,
       x: p.name,
       parent,
-      attributes: { years: p.years, initials: initials(p.name), kind: 'person' },
+      attributes: { years: p.years, kind: 'person' },
+      color: 'transparent',
+      outline: { width: 0 },
+      annotation: { padding: 0, margin: [18, 7] },
       label: {
-        text: '<span style="font-size:15px;font-weight:600">%name</span><br><span style="font-size:11px;color:#81796f">%years</span>'
+        text: personCardElementHtml(p)
       }
     };
   };
@@ -66,11 +69,11 @@
     animation_duration: 0,
     defaultTooltip_enabled: false,
     defaultAnnotation: {
-      padding: [8, 12],
+      padding: 0,
       margin: [18, 7]
     },
     defaultSeries: {
-      color: '#ffffff',
+      color: 'transparent',
       pointSelection: false
     },
     defaultPoint: {
@@ -80,13 +83,10 @@
         width: 1.2,
         radius: [0, 7]
       },
-      outline: { color: '#d8d3ca', width: 1 },
-      label: { style_color: '#26231f' },
-      annotation: { syncHeight_with: 'level' },
+      outline: { width: 0 },
       states: {
         hover: {
-          color: '#ffffff',
-          outline: { color: '#9d9488', width: 1.5 }
+          outline: { width: 0 }
         }
       }
     },
