@@ -27,18 +27,24 @@ Charted Roots must therefore remain an **optional editor/maintenance client**, n
 
 ## Compatibility principle
 
-Compatibility should be implemented through explicit import/export adapters:
+Compatibility should primarily be implemented through explicit interchange/import-export adapters. The preferred interoperability boundary is GEDCOM and normalized genealogy data, not Charted Roots' vault schema.
 
 ```text
 Genealogy Library canonical Markdown
             |
-            +------> Charted Roots export adapter
-            |             |
-            |             v
-            |        Obsidian vault
-            |             |
-            |             v
-            +<------ Charted Roots import adapter
+            +------> GEDCOM / adapter
+                          |
+                          v
+                  Charted Roots / Obsidian
+                          |
+                          v
+                    GEDCOM / adapter
+                          |
+                          v
+                 reconciliation import
+                          |
+                          v
+                     Git changes
 ```
 
 The canonical Genealogy Library schema remains independent.
@@ -138,15 +144,66 @@ Initial compatibility should focus on information that is both common and struct
 
 Less common Charted Roots-specific properties should not automatically expand the canonical schema. Unknown properties can be reported or preserved in migration metadata until we deliberately decide to support them.
 
-## Events, places, sources and citations
+## Canonical entity structure
 
-Charted Roots can model people, events, places, sources and citations as separate notes. This is useful as a domain reference, but Genealogy Library does not yet need to copy that physical layout.
+Charted Roots usefully demonstrates that mature genealogy eventually needs more than `People`. Genealogy Library should reserve the same domain boundaries while keeping the canonical representation simpler and Git-friendly:
+
+```text
+src/content/
+├── people/
+├── events/
+├── places/
+├── sources/
+├── citations/
+└── evidence/
+```
+
+These are semantic data entities, not UI/application folders.
+
+An Obsidian `Bases` directory is **not** part of the canonical content model. Its equivalent belongs to generated/configuration/view logic in Genealogy Library.
+
+### People
+
+People are grouped by birth decade for human navigation:
+
+```text
+people/
+├── 1880-1889/
+├── 1890-1899/
+├── ...
+└── unknown/
+```
+
+Paths never participate in identity or relationships.
+
+### Events
+
+First-class events are grouped by the year in which they occurred:
+
+```text
+events/
+├── 1917/
+├── 1941/
+├── 1988/
+│   └── birth-anton-nazarov/
+│       └── index.md
+├── 2023/
+└── unknown/
+```
+
+If an event date is corrected, the event may move to another year directory without changing its stable event ID or breaking links.
+
+Not every GEDCOM fact must become an event file. Simple birth/death metadata may remain embedded in the person record until there is a reason to promote it to a first-class event. Separate event records are most useful when the event has its own participants, place, sources, documents, narrative, or other metadata.
+
+## Events, places, sources and citations migration
+
+Charted Roots can model people, events, places, sources and citations as separate notes. This is useful as a domain reference, but Genealogy Library does not need to mirror Charted Roots' physical vault layout or plugin-oriented metadata.
 
 The migration layer should separate **semantic identity** from **file representation**.
 
-For example, if a Charted Roots birth event exists as its own note, the importer may map it to canonical person birth metadata if that is how Genealogy Library models births. Conversely, if Genealogy Library later promotes events to first-class records, the adapter can change without rewriting old person identities.
+For example, if a Charted Roots birth event exists as its own note, the importer may map it to canonical person birth metadata if that is how Genealogy Library models that fact. If the same event deserves first-class treatment, it can instead become an event record under `events/<year>/...` with its own stable ID.
 
-The same applies to places, sources and citations.
+The same principle applies to places, sources, citations and evidence: preserve their meaning, not Charted Roots' file mechanics.
 
 ## Markdown body preservation
 
@@ -171,13 +228,13 @@ A safe Charted Roots -> Genealogy Library migration should follow the same recon
 select Obsidian vault/folder
         |
         v
-scan person notes
+scan genealogy notes
         |
         v
 parse + normalize Charted Roots properties
         |
         v
-resolve cr_id -> internal ID
+resolve external IDs -> internal IDs
         |
         v
 cross-script / graph-aware candidate matching
@@ -208,7 +265,8 @@ A future workflow could be:
 
 ```text
 open/edit in Charted Roots
-        -> export/sync adapter
+        -> GEDCOM/export adapter
+        -> reconciliation
         -> generated Git diff
         -> review
         -> commit / PR
@@ -228,7 +286,8 @@ In particular, do not commit to preserving:
 - Obsidian cache/index state;
 - Charted Roots configuration;
 - custom worldbuilding/universe features;
-- every plugin-specific custom property.
+- every plugin-specific custom property;
+- Obsidian Bases definitions.
 
 The compatibility contract is about genealogical data and human-written content, not reproducing the application environment.
 
@@ -237,7 +296,7 @@ The compatibility contract is about genealogical data and human-written content,
 This compatibility path provides an escape hatch in both directions:
 
 - Genealogy Library can remain intentionally lightweight for daily use.
-- When deep cleanup/research is needed, the data can be moved into a mature Markdown-oriented research interface.
+- When deep cleanup/research is needed, the data can be moved into a mature research interface.
 - Improvements made there can return as transparent Git changes.
 - Neither product becomes mandatory for long-term access to the family archive.
 
@@ -257,7 +316,7 @@ The long-term architecture therefore becomes:
         Astro/Starlight              Charted Roots/Obsidian
                  \                         /
                   \                       /
-                   ---- explicit adapters ----
+                   ---- interchange ----
 ```
 
 This is the desired relationship: interoperability without ownership.
