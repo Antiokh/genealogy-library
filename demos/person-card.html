@@ -8,17 +8,20 @@
   <style>
     .card-preview {
       max-width: 1100px;
-      margin: 40px auto;
+      margin: 28px auto;
       display: flex;
       flex-wrap: wrap;
-      gap: 24px;
+      gap: 18px;
       align-items: flex-start;
     }
     .card-preview figure { margin: 0; }
     .card-preview figcaption {
-      margin-top: 8px;
+      margin-top: 6px;
       font-size: 11px;
       color: #827b71;
+    }
+    @media (max-width: 600px) {
+      .card-preview { margin: 14px auto; gap: 12px; }
     }
   </style>
 </head>
@@ -34,7 +37,7 @@
   </nav>
 </header>
 <main>
-  <p class="demo-note">This is the shared card component. Names can wrap without ellipsis, compound names stay visible, and a changed surname can show the surname at birth separately. The last cards are stress cases.</p>
+  <p class="demo-note">Shared PersonCard: compact vertical spacing, multiline names, surname at birth, and a graceful initials fallback when an external photo fails.</p>
   <div class="card-preview" id="cards"></div>
 </main>
 <script type="module">
@@ -55,6 +58,14 @@
       sex: 'F',
       deceased: true,
       label: 'surname at birth'
+    },
+    {
+      id: 'BROKEN-PHOTO',
+      name: 'Татьяна Бескоровайная',
+      years: '1961–',
+      sex: 'F',
+      photo: './definitely-missing-photo.jpg',
+      label: 'broken photo → initials fallback'
     },
     {
       id: 'LONG-RU',
