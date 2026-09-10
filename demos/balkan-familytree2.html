@@ -131,6 +131,8 @@
     template.html = node => personCardElementHtml({
       id: node.familyMember.id,
       name: node.familyMember.name || 'Unknown person',
+      birthSurname: node.familyMember.birthSurname || '',
+      marriedSurname: node.familyMember.marriedSurname || '',
       years: node.familyMember.years || '',
       sex: node.familyMember.sex || '',
       deceased: Boolean(node.familyMember.deceased),
@@ -162,8 +164,8 @@
       separations.childSide = 40;
       separations.childNeighbor = 40;
       separations.spouseNeighbor = 34;
-      separations.parentLevel = 156;
-      separations.childLevel = 156;
+      separations.parentLevel = 174;
+      separations.childLevel = 174;
     }
 
     const tree = new FamilyTree2(document.getElementById('BalkanTree'));
