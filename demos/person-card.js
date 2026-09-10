@@ -86,7 +86,6 @@ export class GenealogyPersonCard extends HTMLElement {
           place-items: center;
           overflow: hidden;
           border-radius: 50%;
-          border: 2px solid var(--avatar-accent);
           background: #eeebe4;
           color: #59534a;
           font-size: 12px;
@@ -98,11 +97,17 @@ export class GenealogyPersonCard extends HTMLElement {
         .avatar.female { --avatar-accent: #c48691; }
         .avatar.unknown { --avatar-accent: #aaa49b; }
         .avatar-photo {
+          position: relative;
+          z-index: 1;
           width: 40px;
           height: 40px;
           display: block;
           border-radius: 50%;
           object-fit: cover;
+        }
+        .avatar-initials {
+          position: relative;
+          z-index: 1;
         }
         .avatar.deceased .avatar-photo {
           filter: grayscale(1);
@@ -115,13 +120,22 @@ export class GenealogyPersonCard extends HTMLElement {
           content: '';
           position: absolute;
           z-index: 2;
-          right: -2px;
+          right: -8px;
           bottom: 8px;
-          width: 30px;
+          width: 38px;
           height: 5px;
           background: rgba(10,10,10,.96);
           transform: rotate(-42deg);
           transform-origin: center;
+          pointer-events: none;
+        }
+        .avatar::before {
+          content: '';
+          position: absolute;
+          z-index: 3;
+          inset: 0;
+          border: 2px solid var(--avatar-accent);
+          border-radius: 50%;
           pointer-events: none;
         }
         .text { min-width: 0; }
