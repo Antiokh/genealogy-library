@@ -26,13 +26,13 @@ The demos load third-party libraries from public CDNs, so they need an internet 
 
 ## Shared PersonCard
 
-`person-card.js` is now the single visual source of truth for a person node.
+`person-card.js` is the single visual source of truth for a person node.
 
 It defines the `genealogy-person-card` Web Component and a small `personCardElementHtml()` adapter. The same component must be embedded by every renderer demo. A library is not allowed to keep a visually similar but renderer-specific card just to stay in the comparison.
 
 Open `person-card.html` to inspect the component independently from any tree renderer.
 
-This gives us a fourth practical hard test:
+This gives us a practical hard test:
 
 > if a renderer cannot host the same PersonCard cleanly, it fails the custom-card requirement.
 
@@ -52,20 +52,23 @@ Why it remains:
 
 Blocking question: its current multi-spouse layout can place children under the wrong couple. It remains viable only if that behavior can be corrected without replacing the layout engine.
 
-The comparison demo disables transition animation so rendering/layout cost can be judged separately from animation latency.
+The comparison demo disables transition animation and explicitly neutralizes Family Chart's own card background, border, shadow and pseudo-elements. The only visible card should now be the shared `genealogy-person-card`.
 
-### JSCharting Org
+### BALKAN FamilyTreeJS 2
 
-Why it remains:
+Why it is a primary candidate:
 
-- organizational layout supports multiple parents;
-- an explicit generated union node can therefore have both partners as parents;
-- children can structurally descend from that union rather than from only one spouse;
-- hierarchy interaction/collapse is available.
+- genealogy-specific rather than an org-chart projection;
+- native `spouseIds` plus parent/child relationships;
+- multiple spouses are supported directly;
+- children identify their actual parent pair, so remarriage does not require union-node hacks;
+- collapse state is part of the API (`collapsedIds`) and the library has genealogy-specific expand/collapse behavior;
+- the v2 template API accepts arbitrary HTML, so the shared PersonCard Web Component can be returned directly from `template.html`;
+- node size, HTML, SVG background and relationship-specific templates are customizable.
 
-The demo now deliberately attempts to render the exact shared PersonCard through JSCharting's HTML annotation/label layer. If that does not render or measure correctly in the browser, JSCharting fails the component requirement instead of receiving a special JSCharting-only card.
+The demo maps the same synthetic source data into FamilyTreeJS 2 records and uses the exact shared PersonCard. It also exposes simple collapse/expand buttons to exercise collapse state directly.
 
-Risk: proprietary/commercial dependency and a less component-native rendering model than Vue.
+Risk: commercial/proprietary dependency. Runtime feel, visual geometry and licensing must justify using it as a core renderer.
 
 ### Vue Flow + ELK
 
@@ -80,21 +83,16 @@ Risk: branch collapse, genealogy-specific layout rules and much of the behavior 
 
 ## Rejected from active evaluation
 
-The following demos were removed because their structural model cannot satisfy child-per-union semantics cleanly enough for the product:
+The following demos were removed because they cannot satisfy the product requirements cleanly enough:
 
 - **ApexTree** — strict nested `children[]` hierarchy; one structural parent path;
 - **treeSpider** — strict `id + parentId` hierarchy; additionally the demo did not load reliably in testing;
 - **d3-org-chart** — one structural `parentId`; secondary connections do not participate in layout;
 - **DHTMLX Diagram org chart** — partner nodes cannot themselves be parent nodes, so children cannot naturally belong to a specific partnership;
+- **JSCharting Org** — multiple-parent layout was promising, but the HTML annotation layer rendered the shared Web Component markup as text instead of hosting it as DOM. Supporting it would require a JSCharting-specific card implementation, which violates the shared-component requirement;
 - **Custom SVG renderer demo** — removed because it was not a library candidate. Only the reusable PersonCard is kept as a renderer-independent visual baseline.
 
 These projects may still be useful visual references, but they are no longer implementation candidates.
-
-## Next candidate to test
-
-**BALKAN FamilyTreeJS 2** should be added as a focused comparison because it explicitly supports multiple partners, genealogy-oriented family relationships, expand/collapse and customizable node templates. Its main downside is commercial licensing.
-
-It must use the same `genealogy-person-card` component in the demo; a native BALKAN template that only imitates the card does not count.
 
 ## Decision criterion
 
