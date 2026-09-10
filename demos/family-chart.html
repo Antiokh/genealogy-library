@@ -12,8 +12,6 @@
     #FamilyChart .card_cont { overflow: visible; filter: none !important; }
     #FamilyChart path.link { stroke: #aaa298; stroke-width: 1.35px; }
 
-    /* Family Chart owns layout and hit targets only. Its legacy card skin must
-       not remain visible behind the shared GenealogyPersonCard component. */
     #FamilyChart div.card,
     #FamilyChart div.card.card-male,
     #FamilyChart div.card.card-female,
@@ -21,8 +19,8 @@
     #FamilyChart div.card-inner,
     #FamilyChart .genealogy-card-host {
       width: 240px !important;
-      height: 120px !important;
-      min-height: 120px !important;
+      height: 108px !important;
+      min-height: 108px !important;
       margin: 0 !important;
       padding: 0 !important;
       border: 0 !important;
@@ -55,7 +53,7 @@
   </nav>
 </header>
 <main>
-  <p class="demo-note">Family Chart owns the genealogy layout only. By default this page renders the real MyHeritage snapshot centered on Anton; append <code>?sample=1</code> to return to the synthetic fixture. Every node is the shared PersonCard.</p>
+  <p class="demo-note">Family Chart owns the genealogy layout only. By default this page renders the current MyHeritage snapshot centered on Anton; append <code>?sample=1</code> to return to the synthetic fixture. Every node is the shared PersonCard.</p>
   <div class="canvas-shell"><div id="FamilyChart" class="f3"></div></div>
 </main>
 <script type="module">
@@ -69,7 +67,7 @@
   const chart = f3.createChart('#FamilyChart', data)
     .setTransitionTime(0)
     .setCardXSpacing(286)
-    .setCardYSpacing(172);
+    .setCardYSpacing(148);
 
   chart.setCardHtml()
     .setCardInnerHtmlCreator(d => {
