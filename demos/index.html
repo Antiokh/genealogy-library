@@ -20,7 +20,7 @@
 <body>
   <div class="home">
     <h1>Viable tree renderer candidates.</h1>
-    <p class="lead">Only candidates that can plausibly meet the hard requirements remain: collapsible branches, correct multi-partner family geometry, and a fully custom person card. Every renderer must now use the same shared PersonCard component.</p>
+    <p class="lead">Only candidates that can plausibly meet the hard requirements remain: collapsible branches, correct multi-partner family geometry, and a fully custom person card. Every renderer must use the same shared PersonCard component.</p>
     <div class="grid">
       <a class="choice" href="./person-card.html">
         <strong>Shared PersonCard</strong>
@@ -29,17 +29,17 @@
       </a>
       <a class="choice" href="./family-chart.html">
         <strong>Family Chart</strong>
-        <span>Genealogy-specific and MIT. It can host the shared card and already solves most browsing interaction, but multi-spouse layout correctness still needs verification/fixing.</span>
+        <span>Genealogy-specific and MIT. It hosts the shared card and already solves most browsing interaction, but multi-spouse layout correctness still needs verification/fixing.</span>
         <small class="tag">MIT · genealogy-specific</small>
       </a>
-      <a class="choice" href="./jscharting.html">
-        <strong>JSCharting Org</strong>
-        <span>Supports multiple parents, so explicit union nodes can preserve which children belong to which partnership. The demo now tests the exact shared card component rather than a JSCharting-specific imitation.</span>
-        <small class="tag">paid · multi-parent</small>
+      <a class="choice" href="./balkan-familytree2.html">
+        <strong>BALKAN FamilyTreeJS 2</strong>
+        <span>Genealogy-specific with native spouses, parent pairs, collapse state and arbitrary HTML templates. This is now the strongest off-the-shelf candidate if its licensing and runtime feel are acceptable.</span>
+        <small class="tag">commercial · genealogy-specific</small>
       </a>
       <a class="choice" href="./vue-flow-elk.html">
         <strong>Vue Flow + ELK</strong>
-        <span>Full semantic and component freedom with explicit union nodes. It remains the heavier fallback if lighter renderers cannot satisfy both marriage layout and card requirements.</span>
+        <span>Full semantic and component freedom with explicit union nodes. It remains the heavier fallback if the genealogy-specific renderers fail layout or card requirements.</span>
         <small class="tag">MIT · custom graph</small>
       </a>
     </div>
