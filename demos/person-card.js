@@ -1,5 +1,5 @@
-export const PERSON_CARD_WIDTH = 184;
-export const PERSON_CARD_HEIGHT = 72;
+export const PERSON_CARD_WIDTH = 240;
+export const PERSON_CARD_HEIGHT = 104;
 
 const esc = value => String(value ?? '')
   .replaceAll('&', '&amp;')
@@ -21,6 +21,13 @@ const normalizeSex = value => {
   if (sex === 'M' || sex === 'MALE') return 'male';
   if (sex === 'F' || sex === 'FEMALE') return 'female';
   return 'unknown';
+};
+
+const nameSizeClass = name => {
+  const length = String(name || '').trim().length;
+  if (length > 52) return ' name-xlong';
+  if (length > 34) return ' name-long';
+  return '';
 };
 
 export class GenealogyPersonCard extends HTMLElement {
@@ -67,10 +74,10 @@ export class GenealogyPersonCard extends HTMLElement {
           width: 100%;
           height: 100%;
           display: grid;
-          grid-template-columns: 44px minmax(0, 1fr);
-          gap: 11px;
+          grid-template-columns: 48px minmax(0, 1fr);
+          gap: 12px;
           align-items: center;
-          padding: 11px 12px;
+          padding: 12px 14px;
           border-radius: 14px;
           border: 1px solid rgba(49,45,39,.13);
           background: rgba(255,255,255,.98);
@@ -80,8 +87,8 @@ export class GenealogyPersonCard extends HTMLElement {
         .avatar {
           --avatar-accent: #aaa49b;
           position: relative;
-          width: 44px;
-          height: 44px;
+          width: 48px;
+          height: 48px;
           display: grid;
           place-items: center;
           overflow: hidden;
@@ -99,8 +106,8 @@ export class GenealogyPersonCard extends HTMLElement {
         .avatar-photo {
           position: relative;
           z-index: 1;
-          width: 43px;
-          height: 43px;
+          width: 47px;
+          height: 47px;
           display: block;
           border-radius: 50%;
           object-fit: cover;
@@ -123,8 +130,8 @@ export class GenealogyPersonCard extends HTMLElement {
           position: absolute;
           z-index: 2;
           right: -8px;
-          bottom: 8px;
-          width: 38px;
+          bottom: 9px;
+          width: 41px;
           height: 5px;
           background: rgba(10,10,10,.96);
           transform: rotate(-42deg);
@@ -149,23 +156,29 @@ export class GenealogyPersonCard extends HTMLElement {
           user-select: none;
           -webkit-user-select: none;
         }
-        .text { min-width: 0; }
+        .text {
+          min-width: 0;
+          align-self: center;
+        }
         .name {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
           font-size: 14px;
-          line-height: 1.25;
+          line-height: 1.18;
           font-weight: 650;
           color: #26231f;
+          white-space: normal;
+          overflow: visible;
+          overflow-wrap: anywhere;
+          word-break: normal;
+          hyphens: auto;
         }
+        .name-long { font-size: 13px; line-height: 1.16; }
+        .name-xlong { font-size: 12px; line-height: 1.14; }
         .years {
-          margin-top: 4px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+          margin-top: 5px;
           font-size: 12px;
+          line-height: 1.2;
           color: #827b71;
+          white-space: nowrap;
         }
       </style>
       <article class="card" data-person-id="${esc(personId)}">
@@ -174,7 +187,7 @@ export class GenealogyPersonCard extends HTMLElement {
           <span class="avatar-shield"></span>
         </div>
         <div class="text">
-          <div class="name">${esc(name)}</div>
+          <div class="name${nameSizeClass(name)}">${esc(name)}</div>
           <div class="years">${esc(years)}</div>
         </div>
       </article>`;
